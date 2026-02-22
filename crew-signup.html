@@ -1,525 +1,591 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+    />
     <title>FilmFlow - Join Production</title>
-    
+
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        :root {
-            --primary: #FF2D55;
-            --primary-dark: #E61E44;
-            --secondary: #FFD60A;
-            --dark: #1C1C1E;
-            --medium: #2C2C2E;
-            --light: #F2F2F7;
-            --text: #FFFFFF;
-            --text-muted: #98989D;
-            --success: #30D158;
-            --warning: #FF9F0A;
-            --danger: #FF453A;
-        }
+      :root {
+        --primary: #ff2d55;
+        --primary-dark: #e61e44;
+        --secondary: #ffd60a;
+        --dark: #1c1c1e;
+        --medium: #2c2c2e;
+        --light: #f2f2f7;
+        --text: #ffffff;
+        --text-muted: #98989d;
+        --success: #30d158;
+        --warning: #ff9f0a;
+        --danger: #ff453a;
+      }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--dark);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF6B6B 100%);
-            padding: 1.5rem;
-            text-align: center;
-        }
+      .header {
+        background: linear-gradient(135deg, var(--primary) 0%, #ff6b6b 100%);
+        padding: 1.5rem;
+        text-align: center;
+      }
 
-        .header h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
+      .header h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
 
-        .header h1 i {
-            margin-right: 10px;
-        }
+      .header h1 i {
+        margin-right: 10px;
+      }
 
-        .project-banner {
-            background: var(--medium);
-            padding: 1.5rem;
-            border-bottom: 3px solid var(--secondary);
-            text-align: center;
-        }
+      .project-banner {
+        background: var(--medium);
+        padding: 1.5rem;
+        border-bottom: 3px solid var(--secondary);
+        text-align: center;
+      }
 
-        .project-name {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-        }
+      .project-name {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+      }
 
-        .project-dates {
-            color: var(--text-muted);
-            font-size: 1rem;
-        }
+      .project-dates {
+        color: var(--text-muted);
+        font-size: 1rem;
+      }
 
-        .project-dates i {
-            margin-right: 5px;
-        }
+      .project-dates i {
+        margin-right: 5px;
+      }
 
-        .container {
-            padding: 1.5rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+      .container {
+        padding: 1.5rem;
+        max-width: 600px;
+        margin: 0 auto;
+      }
 
-        .card {
-            background: var(--medium);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+      .card {
+        background: var(--medium);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
 
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+      .card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
 
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--secondary);
+      }
+
+      label i {
+        margin-right: 5px;
+        color: var(--primary);
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "Inter", sans-serif;
+        font-size: 1rem;
+        transition: all 0.2s;
+        -webkit-appearance: none;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.2);
+      }
+
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      .checkbox-item {
+        background: var(--dark);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+      }
+
+      .checkbox-item:hover {
+        border-color: var(--primary);
+        background: rgba(255, 45, 85, 0.05);
+      }
+
+      .checkbox-item.selected {
+        border-color: var(--primary);
+        background: rgba(255, 45, 85, 0.1);
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        accent-color: var(--primary);
+        pointer-events: auto;
+      }
+
+      .checkbox-item span {
+        cursor: pointer;
+        font-size: 0.95rem;
+      }
+
+      .date-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .date-item {
+        background: var(--dark);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .date-item:hover {
+        border-color: var(--primary);
+        background: rgba(255, 45, 85, 0.05);
+      }
+
+      .date-item.selected {
+        background: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .date-item .day {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .date-item .weekday {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+
+      .date-item.selected .weekday {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .btn {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 45, 85, 0.3);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-success:hover {
+        background: #28a745;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(48, 209, 88, 0.3);
+      }
+
+      .success-screen {
+        text-align: center;
+        padding: 2rem 1rem;
+      }
+
+      .success-icon {
+        font-size: 4rem;
+        color: var(--success);
+        margin-bottom: 1rem;
+      }
+
+      .success-title {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--success);
+        margin-bottom: 1rem;
+      }
+
+      .success-message {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 3rem;
+      }
+
+      .loading i {
+        font-size: 2rem;
+        color: var(--primary);
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .profile-preview {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--secondary);
+      }
+
+      .profile-preview h3 {
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-preview p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      .error-message {
+        background: rgba(255, 69, 58, 0.1);
+        color: var(--danger);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        border-left: 4px solid var(--danger);
+      }
+
+      @media (max-width: 480px) {
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--secondary);
-        }
-
-        label i {
-            margin-right: 5px;
-            color: var(--primary);
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            transition: all 0.2s;
-            -webkit-appearance: none;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255,45,85,0.2);
+          grid-template-columns: 1fr;
         }
 
         .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-            margin-top: 0.5rem;
-        }
-
-        .checkbox-item {
-            background: var(--dark);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-
-        .checkbox-item:hover {
-            border-color: var(--primary);
-            background: rgba(255,45,85,0.05);
-        }
-
-        .checkbox-item.selected {
-            border-color: var(--primary);
-            background: rgba(255,45,85,0.1);
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin: 0;
-            cursor: pointer;
-            accent-color: var(--primary);
-            pointer-events: auto;
-        }
-
-        .checkbox-item span {
-            cursor: pointer;
-            font-size: 0.95rem;
+          grid-template-columns: 1fr;
         }
 
         .date-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 0.5rem;
-            margin-top: 0.5rem;
+          grid-template-columns: repeat(3, 1fr);
         }
-
-        .date-item {
-            background: var(--dark);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 0.75rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .date-item:hover {
-            border-color: var(--primary);
-            background: rgba(255,45,85,0.05);
-        }
-
-        .date-item.selected {
-            background: var(--primary);
-            border-color: var(--primary);
-        }
-
-        .date-item .day {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .date-item .weekday {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-        }
-
-        .date-item.selected .weekday {
-            color: rgba(255,255,255,0.8);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255,45,85,0.3);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #28a745;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(48,209,88,0.3);
-        }
-
-        .success-screen {
-            text-align: center;
-            padding: 2rem 1rem;
-        }
-
-        .success-icon {
-            font-size: 4rem;
-            color: var(--success);
-            margin-bottom: 1rem;
-        }
-
-        .success-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--success);
-            margin-bottom: 1rem;
-        }
-
-        .success-message {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 3rem;
-        }
-
-        .loading i {
-            font-size: 2rem;
-            color: var(--primary);
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .profile-preview {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--secondary);
-        }
-
-        .profile-preview h3 {
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        .profile-preview p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        .error-message {
-            background: rgba(255,69,58,0.1);
-            color: var(--danger);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--danger);
-        }
-
-        @media (max-width: 480px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .checkbox-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .date-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root">
-        <div class="header">
-            <h1><i class="fas fa-film"></i> FilmFlow</h1>
-        </div>
-        <div id="main-content"></div>
+      <div class="header">
+        <h1><i class="fas fa-film"></i> FilmFlow</h1>
+      </div>
+      <div id="main-content"></div>
     </div>
 
     <script>
-        const API_BASE_URL = 'https://filmflow-api.onrender.com/api';
-        
-        let projectCode = null;
-        let project = null;
-        let existingProfile = null;
-        let selectedDates = [];
-        let formData = {
-            full_name: '',
-            phone: '',
-            email: '',
-            department: '',
-            emergency_name: '',
-            emergency_phone: '',
-            dietary_restrictions: [],
-            address: '',
-            union_status: '',
-            has_insurance: false,
-            insurance_expiry: '',
-            certifications: []
-        };
+      const API_BASE_URL = "https://filmflow-api.onrender.com/api";
 
-        const DEPARTMENTS = [
-            'Camera', 'Sound', 'Grip', 'Electric', 'Art Department', 
-            'Wardrobe', 'Hair & Makeup', 'Production', 'Directing',
-            'Editing', 'VFX', 'Catering', 'Transportation', 'Locations',
-            'Safety', 'Script Supervisor', 'Stunt Coordination', 
-            'Special Effects', 'Props', 'Set Decoration', 'Construction'
-        ];
+      let projectCode = null;
+      let project = null;
+      let existingProfile = null;
+      let selectedDates = [];
+      let formData = {
+        full_name: "",
+        phone: "",
+        email: "",
+        department: "",
+        emergency_name: "",
+        emergency_phone: "",
+        dietary_restrictions: [],
+        address: "",
+        union_status: "",
+        has_insurance: false,
+        insurance_expiry: "",
+        certifications: [],
+      };
 
-        const DIETARY_OPTIONS = [
-            'Vegetarian', 'Vegan', 'Gluten-Free', 'Nut Allergy', 
-            'Dairy-Free', 'Halal', 'Kosher', 'Shellfish Allergy'
-        ];
+      const DEPARTMENTS = [
+        "Camera",
+        "Sound",
+        "Grip",
+        "Electric",
+        "Art Department",
+        "Wardrobe",
+        "Hair & Makeup",
+        "Production",
+        "Directing",
+        "Editing",
+        "VFX",
+        "Catering",
+        "Transportation",
+        "Locations",
+        "Safety",
+        "Script Supervisor",
+        "Stunt Coordination",
+        "Special Effects",
+        "Props",
+        "Set Decoration",
+        "Construction",
+      ];
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            projectCode = urlParams.get('project');
-            
-            console.log('Project Code from URL:', projectCode);
-            
-            if (!projectCode) {
-                showError('No project code provided. Please check your invite link.');
-                return;
-            }
+      const DIETARY_OPTIONS = [
+        "Vegetarian",
+        "Vegan",
+        "Gluten-Free",
+        "Nut Allergy",
+        "Dairy-Free",
+        "Halal",
+        "Kosher",
+        "Shellfish Allergy",
+      ];
 
-            const savedEmail = localStorage.getItem('filmflow_email');
-            if (savedEmail) {
-                await checkExistingProfile(savedEmail);
-            }
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        projectCode = urlParams.get("project");
 
-            await loadProject();
-        });
+        console.log("Project Code from URL:", projectCode);
 
-        async function loadProject() {
-            try {
-                showLoading();
-                
-                console.log('Loading project with code:', projectCode);
-                const response = await fetch(`${API_BASE_URL}/projects/code/${projectCode}`);
-                const data = await response.json();
-                
-                console.log('Project data response:', data);
-                
-                if (data.error) {
-                    showError('Project not found. Please check your invite link.');
-                    return;
-                }
-                
-                project = data.project;
-                renderSignupForm();
-            } catch (error) {
-                console.error('Error loading project:', error);
-                showError('Failed to load project. Please try again.');
-            }
+        if (!projectCode) {
+          showError("No project code provided. Please check your invite link.");
+          return;
         }
 
-        async function checkExistingProfile(email) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/crew/check`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                
-                const data = await response.json();
-                
-                if (data.exists) {
-                    existingProfile = data.profile;
-                    formData = {
-                        ...formData,
-                        full_name: existingProfile.full_name || '',
-                        phone: existingProfile.phone || '',
-                        email: existingProfile.email || '',
-                        department: existingProfile.department || '',
-                        emergency_name: existingProfile.emergency_name || '',
-                        emergency_phone: existingProfile.emergency_phone || '',
-                        dietary_restrictions: existingProfile.dietary_restrictions || [],
-                        address: existingProfile.address || '',
-                        union_status: existingProfile.union_status || '',
-                        has_insurance: existingProfile.has_insurance || false,
-                        insurance_expiry: existingProfile.insurance_expiry || ''
-                    };
-                }
-            } catch (error) {
-                console.error('Error checking profile:', error);
-            }
+        const savedEmail = localStorage.getItem("filmflow_email");
+        if (savedEmail) {
+          await checkExistingProfile(savedEmail);
         }
 
-        async function submitSignup() {
-            try {
-                showLoading();
-                
-                // Validate required fields
-                if (!formData.full_name || !formData.phone || !formData.email || !formData.department) {
-                    alert('Please fill in all required fields');
-                    renderSignupForm();
-                    return;
-                }
+        await loadProject();
+      });
 
-                // Validate email format
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(formData.email)) {
-                    alert('Please enter a valid email address');
-                    renderSignupForm();
-                    return;
-                }
-                
-                console.log('Submitting signup with data:', {
-                    ...formData,
-                    available_dates: selectedDates,
-                    crew_id: existingProfile?.id
-                });
-                
-                const response = await fetch(`${API_BASE_URL}/projects/${projectCode}/crew/signup`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        ...formData,
-                        available_dates: selectedDates,
-                        crew_id: existingProfile?.id
-                    })
-                });
-                
-                const data = await response.json();
-                console.log('Signup response:', data);
-                
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to sign up');
-                }
-                
-                localStorage.setItem('filmflow_email', formData.email);
-                renderSuccess();
-            } catch (error) {
-                console.error('Error submitting signup:', error);
-                alert(error.message || 'Failed to submit. Please try again.');
-                renderSignupForm();
-            }
+      async function loadProject() {
+        try {
+          showLoading();
+
+          console.log("Loading project with code:", projectCode);
+          const response = await fetch(
+            `${API_BASE_URL}/projects/code/${projectCode}`,
+          );
+          const data = await response.json();
+
+          console.log("Project data response:", data);
+
+          if (data.error) {
+            showError("Project not found. Please check your invite link.");
+            return;
+          }
+
+          project = data.project;
+          renderSignupForm();
+        } catch (error) {
+          console.error("Error loading project:", error);
+          showError("Failed to load project. Please try again.");
         }
+      }
 
-        function showLoading() {
-            document.getElementById('main-content').innerHTML = `
+      async function checkExistingProfile(email) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/crew/check`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await response.json();
+
+          if (data.exists) {
+            existingProfile = data.profile;
+            formData = {
+              ...formData,
+              full_name: existingProfile.full_name || "",
+              phone: existingProfile.phone || "",
+              email: existingProfile.email || "",
+              department: existingProfile.department || "",
+              emergency_name: existingProfile.emergency_name || "",
+              emergency_phone: existingProfile.emergency_phone || "",
+              dietary_restrictions: existingProfile.dietary_restrictions || [],
+              address: existingProfile.address || "",
+              union_status: existingProfile.union_status || "",
+              has_insurance: existingProfile.has_insurance || false,
+              insurance_expiry: existingProfile.insurance_expiry || "",
+            };
+          }
+        } catch (error) {
+          console.error("Error checking profile:", error);
+        }
+      }
+
+      async function submitSignup() {
+        try {
+          showLoading();
+
+          // Validate required fields
+          if (
+            !formData.full_name ||
+            !formData.phone ||
+            !formData.email ||
+            !formData.department
+          ) {
+            alert("Please fill in all required fields");
+            renderSignupForm();
+            return;
+          }
+
+          // Validate email format
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(formData.email)) {
+            alert("Please enter a valid email address");
+            renderSignupForm();
+            return;
+          }
+
+          // Prepare the data exactly as the API expects
+          const requestData = {
+            full_name: formData.full_name,
+            phone: formData.phone,
+            email: formData.email,
+            department: formData.department,
+            emergency_name: formData.emergency_name || null,
+            emergency_phone: formData.emergency_phone || null,
+            dietary_restrictions: formData.dietary_restrictions || [],
+            address: formData.address || null,
+            union_status: formData.union_status || null,
+            has_insurance: formData.has_insurance || false,
+            insurance_expiry: null,
+            certifications: [],
+            available_dates: selectedDates || [],
+          };
+
+          console.log("Submitting signup with data:", requestData);
+
+          const response = await fetch(
+            `${API_BASE_URL}/projects/${projectCode}/crew/signup`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(requestData),
+            },
+          );
+
+          const responseText = await response.text();
+          console.log("Raw response:", responseText);
+
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (e) {
+            console.error("Failed to parse response:", responseText);
+            throw new Error("Server returned invalid response");
+          }
+
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to sign up");
+          }
+
+          localStorage.setItem("filmflow_email", formData.email);
+          renderSuccess();
+        } catch (error) {
+          console.error("Error submitting signup:", error);
+          alert(error.message || "Failed to submit. Please try again.");
+          renderSignupForm();
+        }
+      }
+
+      function showLoading() {
+        document.getElementById("main-content").innerHTML = `
                 <div class="container">
                     <div class="loading">
                         <i class="fas fa-spinner fa-spin"></i>
@@ -527,10 +593,10 @@
                     </div>
                 </div>
             `;
-        }
+      }
 
-        function showError(message) {
-            document.getElementById('main-content').innerHTML = `
+      function showError(message) {
+        document.getElementById("main-content").innerHTML = `
                 <div class="container">
                     <div class="card" style="text-align: center; padding: 3rem;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
@@ -542,29 +608,33 @@
                     </div>
                 </div>
             `;
-        }
+      }
 
-        function renderSignupForm() {
-            const content = document.getElementById('main-content');
-            
-            const dates = project?.shoot_dates || [];
+      function renderSignupForm() {
+        const content = document.getElementById("main-content");
 
-            content.innerHTML = `
+        const dates = project?.shoot_dates || [];
+
+        content.innerHTML = `
                 <div class="project-banner">
-                    <div class="project-name">${project?.name || 'Loading...'}</div>
+                    <div class="project-name">${project?.name || "Loading..."}</div>
                     <div class="project-dates">
                         <i class="far fa-calendar-alt"></i> 
-                        ${project ? formatDateRange(project.start_date, project.end_date) : ''}
+                        ${project ? formatDateRange(project.start_date, project.end_date) : ""}
                     </div>
                 </div>
 
                 <div class="container">
-                    ${existingProfile ? `
+                    ${
+                      existingProfile
+                        ? `
                         <div class="profile-preview">
                             <h3><i class="fas fa-user-check"></i> Welcome Back!</h3>
                             <p>We've pre-filled your information from your previous signup. Please review and update if needed.</p>
                         </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
                     <div class="card">
                         <div class="card-title">
@@ -591,9 +661,11 @@
                             <label><i class="fas fa-briefcase"></i> Department *</label>
                             <select id="department">
                                 <option value="">Select your department...</option>
-                                ${DEPARTMENTS.map(dept => `
-                                    <option value="${dept}" ${formData.department === dept ? 'selected' : ''}>${dept}</option>
-                                `).join('')}
+                                ${DEPARTMENTS.map(
+                                  (dept) => `
+                                    <option value="${dept}" ${formData.department === dept ? "selected" : ""}>${dept}</option>
+                                `,
+                                ).join("")}
                             </select>
                         </div>
                     </div>
@@ -604,17 +676,18 @@
                         </div>
                         
                         <div class="checkbox-grid" id="dietary-grid">
-                            ${DIETARY_OPTIONS.map(option => {
-                                const isChecked = formData.dietary_restrictions.includes(option);
-                                return `
-                                    <div class="checkbox-item ${isChecked ? 'selected' : ''}" data-value="${option}">
+                            ${DIETARY_OPTIONS.map((option) => {
+                              const isChecked =
+                                formData.dietary_restrictions.includes(option);
+                              return `
+                                    <div class="checkbox-item ${isChecked ? "selected" : ""}" data-value="${option}">
                                         <input type="checkbox" 
                                                value="${option}" 
-                                               ${isChecked ? 'checked' : ''}>
+                                               ${isChecked ? "checked" : ""}>
                                         <span>${getDietaryIcon(option)} ${option}</span>
                                     </div>
                                 `;
-                            }).join('')}
+                            }).join("")}
                         </div>
                     </div>
 
@@ -627,17 +700,19 @@
                         </p>
                         
                         <div class="date-grid" id="date-grid">
-                            ${dates.map(date => {
+                            ${dates
+                              .map((date) => {
                                 const dateObj = new Date(date);
                                 const isSelected = selectedDates.includes(date);
                                 return `
-                                    <div class="date-item ${isSelected ? 'selected' : ''}" 
+                                    <div class="date-item ${isSelected ? "selected" : ""}" 
                                          data-date="${date}">
                                         <div class="day">${dateObj.getDate()}</div>
-                                        <div class="weekday">${dateObj.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                                        <div class="weekday">${dateObj.toLocaleDateString("en-US", { weekday: "short" })}</div>
                                     </div>
                                 `;
-                            }).join('')}
+                              })
+                              .join("")}
                         </div>
                     </div>
 
@@ -664,8 +739,8 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="checkbox-item" style="padding: 0.75rem; background: transparent; border: 2px solid ${formData.has_insurance ? 'var(--primary)' : 'rgba(255,255,255,0.1)'};">
-                                <input type="checkbox" id="has_insurance" ${formData.has_insurance ? 'checked' : ''}>
+                            <label class="checkbox-item" style="padding: 0.75rem; background: transparent; border: 2px solid ${formData.has_insurance ? "var(--primary)" : "rgba(255,255,255,0.1)"};">
+                                <input type="checkbox" id="has_insurance" ${formData.has_insurance ? "checked" : ""}>
                                 <span>I have current production insurance</span>
                             </label>
                         </div>
@@ -687,82 +762,126 @@
                 </div>
             `;
 
-            // Add event listeners after rendering
-            attachEventListeners();
-        }
+        // Add event listeners after rendering
+        attachEventListeners();
+      }
 
-        function attachEventListeners() {
-            // Input fields
-            document.getElementById('full_name')?.addEventListener('input', (e) => formData.full_name = e.target.value);
-            document.getElementById('phone')?.addEventListener('input', (e) => formData.phone = e.target.value);
-            document.getElementById('email')?.addEventListener('input', (e) => formData.email = e.target.value);
-            document.getElementById('department')?.addEventListener('change', (e) => formData.department = e.target.value);
-            document.getElementById('emergency_name')?.addEventListener('input', (e) => formData.emergency_name = e.target.value);
-            document.getElementById('emergency_phone')?.addEventListener('input', (e) => formData.emergency_phone = e.target.value);
-            document.getElementById('address')?.addEventListener('input', (e) => formData.address = e.target.value);
-            document.getElementById('union_status')?.addEventListener('input', (e) => formData.union_status = e.target.value);
-            
-            // Insurance checkbox
-            document.getElementById('has_insurance')?.addEventListener('change', (e) => {
-                formData.has_insurance = e.target.checked;
-                const parent = e.target.closest('.checkbox-item');
-                if (parent) {
-                    parent.style.borderColor = e.target.checked ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
+      function attachEventListeners() {
+        // Input fields
+        document
+          .getElementById("full_name")
+          ?.addEventListener(
+            "input",
+            (e) => (formData.full_name = e.target.value),
+          );
+        document
+          .getElementById("phone")
+          ?.addEventListener("input", (e) => (formData.phone = e.target.value));
+        document
+          .getElementById("email")
+          ?.addEventListener("input", (e) => (formData.email = e.target.value));
+        document
+          .getElementById("department")
+          ?.addEventListener(
+            "change",
+            (e) => (formData.department = e.target.value),
+          );
+        document
+          .getElementById("emergency_name")
+          ?.addEventListener(
+            "input",
+            (e) => (formData.emergency_name = e.target.value),
+          );
+        document
+          .getElementById("emergency_phone")
+          ?.addEventListener(
+            "input",
+            (e) => (formData.emergency_phone = e.target.value),
+          );
+        document
+          .getElementById("address")
+          ?.addEventListener(
+            "input",
+            (e) => (formData.address = e.target.value),
+          );
+        document
+          .getElementById("union_status")
+          ?.addEventListener(
+            "input",
+            (e) => (formData.union_status = e.target.value),
+          );
+
+        // Insurance checkbox
+        document
+          .getElementById("has_insurance")
+          ?.addEventListener("change", (e) => {
+            formData.has_insurance = e.target.checked;
+            const parent = e.target.closest(".checkbox-item");
+            if (parent) {
+              parent.style.borderColor = e.target.checked
+                ? "var(--primary)"
+                : "rgba(255,255,255,0.1)";
+            }
+          });
+
+        // Dietary checkboxes - improved handling
+        document
+          .querySelectorAll("#dietary-grid .checkbox-item")
+          .forEach((item) => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+
+            // Handle checkbox change
+            checkbox.addEventListener("change", (e) => {
+              e.stopPropagation();
+              const option = e.target.value;
+              if (e.target.checked) {
+                if (!formData.dietary_restrictions.includes(option)) {
+                  formData.dietary_restrictions.push(option);
                 }
+                item.classList.add("selected");
+              } else {
+                formData.dietary_restrictions =
+                  formData.dietary_restrictions.filter((d) => d !== option);
+                item.classList.remove("selected");
+              }
+              console.log(
+                "Dietary restrictions:",
+                formData.dietary_restrictions,
+              );
             });
 
-            // Dietary checkboxes - improved handling
-            document.querySelectorAll('#dietary-grid .checkbox-item').forEach(item => {
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                
-                // Handle checkbox change
-                checkbox.addEventListener('change', (e) => {
-                    e.stopPropagation();
-                    const option = e.target.value;
-                    if (e.target.checked) {
-                        if (!formData.dietary_restrictions.includes(option)) {
-                            formData.dietary_restrictions.push(option);
-                        }
-                        item.classList.add('selected');
-                    } else {
-                        formData.dietary_restrictions = formData.dietary_restrictions.filter(d => d !== option);
-                        item.classList.remove('selected');
-                    }
-                    console.log('Dietary restrictions:', formData.dietary_restrictions);
-                });
-
-                // Handle clicking on the item itself (not just checkbox)
-                item.addEventListener('click', (e) => {
-                    if (e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        // Trigger change event
-                        const event = new Event('change', { bubbles: true });
-                        checkbox.dispatchEvent(event);
-                    }
-                });
+            // Handle clicking on the item itself (not just checkbox)
+            item.addEventListener("click", (e) => {
+              if (e.target !== checkbox) {
+                checkbox.checked = !checkbox.checked;
+                // Trigger change event
+                const event = new Event("change", { bubbles: true });
+                checkbox.dispatchEvent(event);
+              }
             });
+          });
 
-            // Date selection
-            document.querySelectorAll('.date-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const date = item.dataset.date;
-                    if (!date) return;
-                    
-                    const index = selectedDates.indexOf(date);
-                    if (index === -1) {
-                        selectedDates.push(date);
-                        item.classList.add('selected');
-                    } else {
-                        selectedDates.splice(index, 1);
-                        item.classList.remove('selected');
-                    }
-                    console.log('Selected dates:', selectedDates);
-                });
-            });
-        }
+        // Date selection
+        document.querySelectorAll(".date-item").forEach((item) => {
+          item.addEventListener("click", () => {
+            const date = item.dataset.date;
+            if (!date) return;
 
-        function renderSuccess() {
-            document.getElementById('main-content').innerHTML = `
+            const index = selectedDates.indexOf(date);
+            if (index === -1) {
+              selectedDates.push(date);
+              item.classList.add("selected");
+            } else {
+              selectedDates.splice(index, 1);
+              item.classList.remove("selected");
+            }
+            console.log("Selected dates:", selectedDates);
+          });
+        });
+      }
+
+      function renderSuccess() {
+        document.getElementById("main-content").innerHTML = `
                 <div class="container">
                     <div class="card success-screen">
                         <div class="success-icon">
@@ -784,37 +903,39 @@
                     </div>
                 </div>
             `;
-        }
+      }
 
-        function formatDateRange(start, end) {
-            return `${formatDate(start)} - ${formatDate(end)}`;
-        }
+      function formatDateRange(start, end) {
+        return `${formatDate(start)} - ${formatDate(end)}`;
+      }
 
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
-        }
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
 
-        function getDietaryIcon(diet) {
-            const icons = {
-                'Vegetarian': '🥗',
-                'Vegan': '🌱',
-                'Gluten-Free': '🌾',
-                'Nut Allergy': '🥜',
-                'Dairy-Free': '🥛',
-                'Halal': '☪️',
-                'Kosher': '✡️',
-                'Shellfish Allergy': '🦐'
-            };
-            return icons[diet] || '📋';
-        }
-
-        window.handleSubmit = () => {
-            console.log('Submitting with data:', formData);
-            console.log('Selected dates:', selectedDates);
-            submitSignup();
+      function getDietaryIcon(diet) {
+        const icons = {
+          Vegetarian: "🥗",
+          Vegan: "🌱",
+          "Gluten-Free": "🌾",
+          "Nut Allergy": "🥜",
+          "Dairy-Free": "🥛",
+          Halal: "☪️",
+          Kosher: "✡️",
+          "Shellfish Allergy": "🦐",
         };
+        return icons[diet] || "📋";
+      }
+
+      window.handleSubmit = () => {
+        console.log("Submitting with data:", formData);
+        console.log("Selected dates:", selectedDates);
+        submitSignup();
+      };
     </script>
-</body>
+  </body>
 </html>
