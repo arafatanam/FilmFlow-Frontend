@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+    />
+    <title>FilmFlow - My Profile</title>
+
+    <!-- Fonts & Icons -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #ff2d55;
+        --primary-dark: #e61e44;
+        --secondary: #ffd60a;
+        --dark: #1c1c1e;
+        --medium: #2c2c2e;
+        --light: #f2f2f7;
+        --text: #ffffff;
+        --text-muted: #98989d;
+        --success: #30d158;
+        --warning: #ff9f0a;
+        --danger: #ff453a;
+        --info: #0a84ff;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--dark);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(135deg, var(--primary) 0%, #ff6b6b 100%);
+        padding: 1.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+      }
+
+      .header h1 i {
+        margin-right: 10px;
+      }
+
+      .header-btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      /* Main Container */
+      .container {
+        padding: 1.5rem;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      /* Cards */
+      .card {
+        background: var(--medium);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      /* Profile Header */
+      .profile-header {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        background: var(--primary);
+        border-radius: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+      }
+
+      .profile-info h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .profile-info p {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+
+      /* Stats Grid */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .stat-item {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--secondary);
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+      }
+
+      /* Forms */
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--secondary);
+      }
+
+      label i {
+        margin-right: 5px;
+        color: var(--primary);
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "Inter", sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.2);
+      }
+
+      input:read-only {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-muted);
+      }
+
+      /* Checkbox Grid */
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      .checkbox-item {
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: auto;
+        margin-right: 0.5rem;
+      }
+
+      /* Unavailable Dates */
+      .unavailable-dates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .date-tag {
+        background: var(--dark);
+        border: 1px solid var(--danger);
+        border-radius: 20px;
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .date-tag button {
+        background: none;
+        border: none;
+        color: var(--danger);
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      /* Projects List */
+      .project-history-item {
+        background: var(--dark);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .project-history-item .project-name {
+        font-weight: 600;
+      }
+
+      .project-history-item .project-date {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      .project-history-item .status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+      }
+
+      .status.completed {
+        background: rgba(48, 209, 88, 0.2);
+        color: var(--success);
+      }
+
+      .status.pending {
+        background: rgba(255, 159, 10, 0.2);
+        color: var(--warning);
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+        width: 100%;
+        justify-content: center;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 45, 85, 0.3);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      /* Alert */
+      .alert {
+        background: rgba(255, 69, 58, 0.1);
+        border-left: 4px solid var(--danger);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        color: var(--danger);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .alert-success {
+        background: rgba(48, 209, 88, 0.1);
+        border-left-color: var(--success);
+        color: var(--success);
+      }
+
+      /* Loading */
+      .loading {
+        text-align: center;
+        padding: 3rem;
+      }
+
+      .loading i {
+        font-size: 2rem;
+        color: var(--primary);
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .checkbox-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .profile-header {
+          flex-direction: column;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Header -->
+      <div class="header">
+        <div class="header-content">
+          <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+          <button class="header-btn" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="container" id="main-content">
+        <!-- Dynamic content will be loaded here -->
+      </div>
+    </div>
+
+    <script>
+      // ============================================
+      // CONFIGURATION
+      // ============================================
+      const API_BASE_URL = "https://filmflow-api.onrender.com/api";
+
+      // ============================================
+      // STATE
+      // ============================================
+      let crewId = null;
+      let profile = null;
+      let unavailableDates = [];
+      let projectHistory = [];
+
+      // Dietary options
+      const DIETARY_OPTIONS = [
+        "Vegetarian",
+        "Vegan",
+        "Gluten-Free",
+        "Nut Allergy",
+        "Dairy-Free",
+        "Halal",
+        "Kosher",
+        "Shellfish Allergy",
+      ];
+
+      // ============================================
+      // INITIALIZATION
+      // ============================================
+      document.addEventListener("DOMContentLoaded", () => {
+        // Check if crew is logged in
+        const savedEmail = localStorage.getItem("filmflow_email");
+        const savedCrewId = localStorage.getItem("filmflow_crew_id");
+
+        if (!savedEmail || !savedCrewId) {
+          showLoginPrompt();
+          return;
+        }
+
+        crewId = savedCrewId;
+        loadProfile(crewId);
+      });
+
+      // ============================================
+      // API CALLS
+      // ============================================
+      async function loadProfile(id) {
+        try {
+          showLoading();
+
+          const response = await fetch(`${API_BASE_URL}/crew/${id}`);
+          const data = await response.json();
+
+          if (data.error) {
+            showError("Failed to load profile");
+            return;
+          }
+
+          profile = data.profile;
+          unavailableDates = profile.personal_unavailable_dates || [];
+
+          // Load project history (you'll need to add this endpoint)
+          await loadProjectHistory(id);
+
+          renderProfile();
+        } catch (error) {
+          console.error("Error loading profile:", error);
+          showError("Failed to load profile");
+        }
+      }
+
+      async function loadProjectHistory(id) {
+        // This would need a new endpoint: /api/crew/:id/projects
+        // For now, use mock data
+        projectHistory = [
+          {
+            id: 1,
+            name: "Summer Commercial 2024",
+            dates: "2024-07-15 to 2024-07-20",
+            status: "completed",
+            role: "Camera Assistant",
+          },
+          {
+            id: 2,
+            name: "Music Video - Artist X",
+            dates: "2024-08-01 to 2024-08-03",
+            status: "upcoming",
+            role: "Camera Department",
+          },
+        ];
+      }
+
+      async function updateProfile(updatedData) {
+        try {
+          showLoading();
+
+          const response = await fetch(`${API_BASE_URL}/crew/profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            alert(data.error);
+            renderProfile();
+            return;
+          }
+
+          showAlert("Profile updated successfully!", "success");
+          loadProfile(crewId);
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          alert("Failed to update profile");
+          renderProfile();
+        }
+      }
+
+      async function updateAvailability(dates) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/crew/${crewId}/availability`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ unavailable_dates: dates }),
+            },
+          );
+
+          const data = await response.json();
+
+          if (data.success) {
+            showAlert("Availability updated!", "success");
+            unavailableDates = dates;
+          }
+        } catch (error) {
+          console.error("Error updating availability:", error);
+          alert("Failed to update availability");
+        }
+      }
+
+      // ============================================
+      // RENDERING
+      // ============================================
+      function showLoading() {
+        document.getElementById("main-content").innerHTML = `
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p style="margin-top: 1rem; color: var(--text-muted);">Loading profile...</p>
+                </div>
+            `;
+      }
+
+      function showError(message) {
+        document.getElementById("main-content").innerHTML = `
+                <div class="card" style="text-align: center; padding: 3rem;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">${message}</p>
+                    <button class="btn btn-primary" onclick="window.location.reload()">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                </div>
+            `;
+      }
+
+      function showLoginPrompt() {
+        document.getElementById("main-content").innerHTML = `
+                <div class="card" style="text-align: center; padding: 3rem;">
+                    <i class="fas fa-lock" style="font-size: 3rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                    <h2 style="margin-bottom: 1rem;">Sign In Required</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                        Please sign in using the email you used to join a production.
+                    </p>
+                    <input type="email" id="login-email" placeholder="Your email" style="margin-bottom: 1rem;">
+                    <button class="btn btn-primary" onclick="handleLogin()">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </div>
+            `;
+      }
+
+      function renderProfile() {
+        const content = document.getElementById("main-content");
+
+        content.innerHTML = `
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        ${profile.full_name?.charAt(0) || "?"}
+                    </div>
+                    <div class="profile-info">
+                        <h2>${profile.full_name || "Name not set"}</h2>
+                        <p><i class="fas fa-briefcase"></i> ${profile.department || "Department not set"}</p>
+                        <p><i class="fas fa-envelope"></i> ${profile.email}</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">${projectHistory.length}</div>
+                        <div class="stat-label">Projects</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${unavailableDates.length}</div>
+                        <div class="stat-label">Unavailable</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">${profile.has_insurance ? "✅" : "❌"}</div>
+                        <div class="stat-label">Insurance</div>
+                    </div>
+                </div>
+
+                <!-- Alerts for missing info -->
+                ${
+                  !profile.emergency_name || !profile.emergency_phone
+                    ? `
+                    <div class="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Emergency contact information is missing
+                    </div>
+                `
+                    : ""
+                }
+
+                ${
+                  !profile.dietary_restrictions ||
+                  profile.dietary_restrictions.length === 0
+                    ? `
+                    <div class="alert">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Dietary restrictions not specified
+                    </div>
+                `
+                    : ""
+                }
+
+                <!-- Edit Profile Form -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Full Name</label>
+                        <input type="text" id="edit_name" value="${profile.full_name || ""}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-phone"></i> Phone</label>
+                            <input type="tel" id="edit_phone" value="${profile.phone || ""}">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="edit_email" value="${profile.email || ""}" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-briefcase"></i> Department</label>
+                        <select id="edit_department">
+                            <option value="">Select department...</option>
+                            ${DEPARTMENTS.map(
+                              (dept) => `
+                                <option value="${dept}" ${profile.department === dept ? "selected" : ""}>${dept}</option>
+                            `,
+                            ).join("")}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-utensils"></i> Dietary Restrictions</label>
+                        <div class="checkbox-grid">
+                            ${DIETARY_OPTIONS.map(
+                              (option) => `
+                                <label class="checkbox-item">
+                                    <input type="checkbox" 
+                                           value="${option}" 
+                                           ${profile.dietary_restrictions?.includes(option) ? "checked" : ""}
+                                           onchange="toggleDietary('${option}')">
+                                    ${option}
+                                </label>
+                            `,
+                            ).join("")}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><i class="fas fa-user-shield"></i> Emergency Contact</label>
+                            <input type="text" id="edit_emergency_name" value="${profile.emergency_name || ""}" placeholder="Name">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <input type="tel" id="edit_emergency_phone" value="${profile.emergency_phone || ""}" placeholder="Phone">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                        <textarea id="edit_address" rows="2">${profile.address || ""}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-shield-alt"></i> Insurance</label>
+                        <div style="display: flex; gap: 1rem; align-items: center;">
+                            <label class="checkbox-item" style="padding: 0; background: transparent;">
+                                <input type="checkbox" id="edit_has_insurance" ${profile.has_insurance ? "checked" : ""}>
+                                <span>I have insurance</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="handleUpdateProfile()">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+
+                <!-- Personal Calendar - Unavailable Dates -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-calendar-times"></i> My Unavailable Dates
+                    </div>
+                    <p style="color: var(--text-muted); margin-bottom: 1rem; font-size: 0.9rem;">
+                        Mark dates when you're NOT available to work:
+                    </p>
+
+                    <div class="unavailable-dates" id="unavailable-dates">
+                        ${unavailableDates
+                          .map(
+                            (date) => `
+                            <div class="date-tag">
+                                ${formatDate(date)}
+                                <button onclick="removeUnavailableDate('${date}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        `,
+                          )
+                          .join("")}
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <input type="date" id="new-unavailable-date" style="flex: 1;">
+                        <button class="btn btn-sm btn-secondary" onclick="addUnavailableDate()">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project History -->
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-history"></i> Project History
+                    </div>
+                    
+                    ${projectHistory
+                      .map(
+                        (project) => `
+                        <div class="project-history-item">
+                            <div>
+                                <div class="project-name">${project.name}</div>
+                                <div class="project-date">${project.dates} • ${project.role}</div>
+                            </div>
+                            <div class="status ${project.status === "completed" ? "completed" : "pending"}">
+                                ${project.status}
+                            </div>
+                        </div>
+                    `,
+                      )
+                      .join("")}
+                </div>
+            `;
+      }
+
+      function showAlert(message, type = "info") {
+        const alertDiv = document.createElement("div");
+        alertDiv.className = `alert alert-${type}`;
+        alertDiv.innerHTML = `
+                <i class="fas fa-${type === "success" ? "check-circle" : "info-circle"}"></i>
+                ${message}
+            `;
+
+        const container = document.querySelector(".container");
+        container.insertBefore(alertDiv, container.firstChild);
+
+        setTimeout(() => alertDiv.remove(), 5000);
+      }
+
+      // ============================================
+      // HELPER FUNCTIONS
+      // ============================================
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+
+      // ============================================
+      // EVENT HANDLERS
+      // ============================================
+      window.handleLogin = () => {
+        const email = document.getElementById("login-email")?.value;
+        if (!email) {
+          alert("Please enter your email");
+          return;
+        }
+
+        // Store email and redirect to signup
+        localStorage.setItem("filmflow_email", email);
+        window.location.href = `/crew-signup.html?project=existing`;
+      };
+
+      window.handleLogout = () => {
+        localStorage.removeItem("filmflow_email");
+        localStorage.removeItem("filmflow_crew_id");
+        window.location.reload();
+      };
+
+      window.toggleDietary = (option) => {
+        // This will be handled in update
+      };
+
+      window.handleUpdateProfile = () => {
+        const updatedData = {
+          full_name: document.getElementById("edit_name")?.value,
+          phone: document.getElementById("edit_phone")?.value,
+          email: profile.email, // Email can't change
+          department: document.getElementById("edit_department")?.value,
+          emergency_name: document.getElementById("edit_emergency_name")?.value,
+          emergency_phone: document.getElementById("edit_emergency_phone")
+            ?.value,
+          dietary_restrictions: profile.dietary_restrictions || [],
+          address: document.getElementById("edit_address")?.value,
+          union_status: profile.union_status,
+          has_insurance:
+            document.getElementById("edit_has_insurance")?.checked || false,
+          insurance_expiry: profile.insurance_expiry,
+          certifications: profile.certifications || [],
+        };
+
+        updateProfile(updatedData);
+      };
+
+      window.addUnavailableDate = () => {
+        const dateInput = document.getElementById("new-unavailable-date");
+        const newDate = dateInput?.value;
+
+        if (!newDate) {
+          alert("Please select a date");
+          return;
+        }
+
+        if (!unavailableDates.includes(newDate)) {
+          unavailableDates.push(newDate);
+          updateAvailability(unavailableDates);
+        }
+
+        dateInput.value = "";
+      };
+
+      window.removeUnavailableDate = (date) => {
+        unavailableDates = unavailableDates.filter((d) => d !== date);
+        updateAvailability(unavailableDates);
+      };
+    </script>
+  </body>
+</html>
