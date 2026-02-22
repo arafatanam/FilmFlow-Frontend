@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Calendar Library (FullCalendar) -->
+    <!-- Calendar Library -->
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     
@@ -34,7 +34,6 @@
             --danger: #FF453A;
             --info: #0A84FF;
             
-            /* Department Colors */
             --camera: #0A84FF;
             --sound: #30D158;
             --grip: #FF9F0A;
@@ -54,7 +53,6 @@
             line-height: 1.5;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(135deg, var(--primary) 0%, #FF6B6B 100%);
             padding: 1.5rem 2rem;
@@ -80,7 +78,6 @@
             margin-top: 5px;
         }
 
-        /* Navigation */
         .nav {
             display: flex;
             gap: 0.5rem;
@@ -121,14 +118,12 @@
             color: white;
         }
 
-        /* Main Container */
         .container {
             padding: 2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
 
-        /* Cards */
         .card {
             background: var(--medium);
             border-radius: 16px;
@@ -147,7 +142,6 @@
             gap: 10px;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -177,7 +171,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Forms */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -214,7 +207,6 @@
             box-shadow: 0 0 0 3px rgba(255,45,85,0.2);
         }
 
-        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -268,7 +260,6 @@
             font-size: 0.85rem;
         }
 
-        /* Project List */
         .project-list {
             display: grid;
             gap: 1rem;
@@ -325,7 +316,6 @@
             color: var(--text-muted);
         }
 
-        /* Invite Link Box */
         .invite-box {
             background: var(--dark);
             border: 2px dashed var(--success);
@@ -343,7 +333,6 @@
             border: none;
         }
 
-        /* Crew Grid */
         .crew-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -434,7 +423,6 @@
             border: 1px solid var(--success);
         }
 
-        /* Calendar */
         #calendar {
             background: var(--dark);
             border-radius: 12px;
@@ -469,7 +457,6 @@
             background: rgba(255,45,85,0.1) !important;
         }
 
-        /* Department Selector */
         .department-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -498,7 +485,6 @@
             margin-top: 0.25rem;
         }
 
-        /* Conflict Report */
         .conflict-item {
             background: rgba(255,69,58,0.1);
             border-left: 4px solid var(--danger);
@@ -516,7 +502,6 @@
             color: var(--success);
         }
 
-        /* Modal */
         .modal {
             position: fixed;
             top: 0;
@@ -556,7 +541,21 @@
             cursor: pointer;
         }
 
-        /* Responsive */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .delete-confirm {
+            background: rgba(255,69,58,0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -580,18 +579,25 @@
             .nav {
                 padding: 0.5rem 1rem;
             }
+
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div id="root">
-        <!-- Header -->
         <div class="header">
             <h1><i class="fas fa-film"></i> FilmFlow Admin</h1>
             <p>Production Management Dashboard</p>
         </div>
 
-        <!-- Navigation -->
         <div class="nav" id="navigation">
             <button class="nav-btn active" data-view="dashboard">
                 <i class="fas fa-chart-pie"></i> Dashboard
@@ -610,21 +616,12 @@
             </button>
         </div>
 
-        <!-- Main Content -->
-        <div class="container" id="main-content">
-            <!-- Dynamic content will be loaded here -->
-        </div>
+        <div class="container" id="main-content"></div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
         const API_BASE_URL = 'https://filmflow-api.onrender.com/api';
         
-        // ============================================
-        // STATE
-        // ============================================
         let currentView = 'dashboard';
         let projects = [];
         let currentProject = null;
@@ -632,17 +629,11 @@
         let schedule = [];
         let conflicts = [];
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             loadProjects();
             setupNavigation();
         });
 
-        // ============================================
-        // NAVIGATION
-        // ============================================
         function setupNavigation() {
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -654,9 +645,6 @@
             });
         }
 
-        // ============================================
-        // API CALLS
-        // ============================================
         async function loadProjects() {
             try {
                 const response = await fetch(`${API_BASE_URL}/projects`);
@@ -723,6 +711,46 @@
             }
         }
 
+        async function deleteProject(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            
+            // First confirmation
+            if (!confirm(`⚠️ Are you sure you want to delete "${project?.name}"?\n\nThis will permanently delete:\n• All crew signups\n• All schedule assignments\n• All call sheets\n\nThis action CANNOT be undone!`)) {
+                return;
+            }
+            
+            // Second confirmation - type DELETE
+            const confirmText = prompt('Type "DELETE" to confirm permanent deletion:');
+            if (confirmText !== 'DELETE') {
+                showNotification('Deletion cancelled', 'info');
+                return;
+            }
+            
+            try {
+                showNotification('Deleting project...', 'info');
+                
+                const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification(`Project "${project?.name}" deleted successfully`, 'success');
+                    if (currentProject?.id === projectId) {
+                        currentProject = null;
+                    }
+                    loadProjects();
+                } else {
+                    throw new Error(data.error || 'Failed to delete project');
+                }
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                showNotification('Failed to delete project', 'error');
+            }
+        }
+
         async function assignDepartment(projectId, department, date) {
             try {
                 const response = await fetch(`${API_BASE_URL}/schedule/assign-department`, {
@@ -769,9 +797,6 @@
             }
         }
 
-        // ============================================
-        // RENDERING
-        // ============================================
         function renderView() {
             const content = document.getElementById('main-content');
             
@@ -796,7 +821,6 @@
             }
         }
 
-        // Dashboard View
         function renderDashboard(container) {
             const totalProjects = projects.length;
             const activeProjects = projects.filter(p => p.status === 'active').length;
@@ -828,10 +852,10 @@
                         <i class="fas fa-rocket"></i> Quick Actions
                     </div>
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="document.querySelector('[data-view=\"projects\"]').click()">
+                        <button class="btn btn-primary" onclick="goToNewProject()">
                             <i class="fas fa-plus"></i> New Project
                         </button>
-                        <button class="btn btn-secondary" onclick="document.querySelector('[data-view=\"schedule\"]').click()">
+                        <button class="btn btn-secondary" onclick="goToSchedule()">
                             <i class="fas fa-calendar"></i> Manage Schedule
                         </button>
                     </div>
@@ -868,7 +892,6 @@
             `;
         }
 
-        // Projects View
         function renderProjects(container) {
             container.innerHTML = `
                 <div class="card">
@@ -906,7 +929,7 @@
                     </div>
                     <div class="project-list">
                         ${projects.map(project => `
-                            <div class="project-item">
+                            <div class="project-item" style="cursor: default;">
                                 <div class="project-info">
                                     <h3>${project.name}</h3>
                                     <div class="project-meta">
@@ -934,12 +957,15 @@
                                         <div class="label">Pending</div>
                                     </div>
                                 </div>
-                                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                                <div class="action-buttons">
                                     <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
                                         <i class="fas fa-eye"></i> View
                                     </button>
                                     <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
                                         <i class="fas fa-edit"></i> Edit Dates
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
+                                        <i class="fas fa-trash"></i> Delete
                                     </button>
                                 </div>
                             </div>
@@ -949,7 +975,6 @@
             `;
         }
 
-        // Crew View
         async function renderCrewView(container) {
             if (!currentProject) {
                 container.innerHTML = `
@@ -977,7 +1002,7 @@
                     <div class="card-title">
                         <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
                     </div>
-                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem;">
+                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
                         <div>
                             <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
                             <div style="color: var(--text-muted);">Total Crew</div>
@@ -1023,7 +1048,6 @@
             `;
         }
 
-        // Schedule View
         async function renderScheduleView(container) {
             if (!currentProject) {
                 container.innerHTML = `
@@ -1087,7 +1111,6 @@
             initCalendar();
         }
 
-        // Call Sheets View
         async function renderCallSheetsView(container) {
             if (!currentProject) {
                 container.innerHTML = `
@@ -1163,9 +1186,6 @@
             `;
         }
 
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
         function formatDate(dateString) {
             return new Date(dateString).toLocaleDateString('en-US', {
                 month: 'short', day: 'numeric', year: 'numeric'
@@ -1209,9 +1229,6 @@
             return Object.entries(byDept);
         }
 
-        // ============================================
-        // EVENT HANDLERS
-        // ============================================
         window.selectProject = async (projectId) => {
             currentProject = projects.find(p => p.id === projectId);
             await Promise.all([
@@ -1219,6 +1236,38 @@
                 loadSchedule(projectId),
                 loadConflicts(projectId)
             ]);
+            
+            // Switch to crew view
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-view="crew"]').classList.add('active');
+            currentView = 'crew';
+            renderView();
+        };
+
+        window.goToNewProject = () => {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-view="projects"]').classList.add('active');
+            currentView = 'projects';
+            renderView();
+            
+            setTimeout(() => {
+                document.getElementById('create-project-form')?.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        };
+
+        window.goToSchedule = () => {
+            if (!currentProject) {
+                showNotification('Please select a project first', 'warning');
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector('[data-view="projects"]').classList.add('active');
+                currentView = 'projects';
+                renderView();
+                return;
+            }
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('[data-view="schedule"]').classList.add('active');
+            currentView = 'schedule';
             renderView();
         };
 
@@ -1336,7 +1385,7 @@
         }
 
         function showNotification(message, type = 'info') {
-            // Simple alert for now - you can enhance this
+            // Simple alert for now
             alert(message);
         }
 
@@ -1384,9 +1433,6 @@
             calendar.render();
         }
 
-        // ============================================
-        // EDIT PROJECT DATES
-        // ============================================
         window.editProjectDates = async (projectId) => {
             const project = projects.find(p => p.id === projectId);
             const newStart = prompt('Enter new start date (YYYY-MM-DD):', project.start_date);
