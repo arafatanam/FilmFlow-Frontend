@@ -152,7 +152,7 @@
 
         .checkbox-item {
             background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
             border-radius: 8px;
             padding: 0.75rem;
             display: flex;
@@ -165,18 +165,26 @@
 
         .checkbox-item:hover {
             border-color: var(--primary);
+            background: rgba(255,45,85,0.05);
+        }
+
+        .checkbox-item.selected {
+            border-color: var(--primary);
+            background: rgba(255,45,85,0.1);
         }
 
         .checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             margin: 0;
             cursor: pointer;
             accent-color: var(--primary);
+            pointer-events: auto;
         }
 
         .checkbox-item span {
             cursor: pointer;
+            font-size: 0.95rem;
         }
 
         .date-grid {
@@ -188,7 +196,7 @@
 
         .date-item {
             background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.1);
             border-radius: 8px;
             padding: 0.75rem;
             text-align: center;
@@ -198,6 +206,7 @@
 
         .date-item:hover {
             border-color: var(--primary);
+            background: rgba(255,45,85,0.05);
         }
 
         .date-item.selected {
@@ -385,6 +394,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             projectCode = urlParams.get('project');
             
+            console.log('Project Code from URL:', projectCode);
+            
             if (!projectCode) {
                 showError('No project code provided. Please check your invite link.');
                 return;
@@ -402,8 +413,11 @@
             try {
                 showLoading();
                 
+                console.log('Loading project with code:', projectCode);
                 const response = await fetch(`${API_BASE_URL}/projects/code/${projectCode}`);
                 const data = await response.json();
+                
+                console.log('Project data response:', data);
                 
                 if (data.error) {
                     showError('Project not found. Please check your invite link.');
@@ -469,6 +483,12 @@
                     return;
                 }
                 
+                console.log('Submitting signup with data:', {
+                    ...formData,
+                    available_dates: selectedDates,
+                    crew_id: existingProfile?.id
+                });
+                
                 const response = await fetch(`${API_BASE_URL}/projects/${projectCode}/crew/signup`, {
                     method: 'POST',
                     headers: { 
@@ -483,6 +503,7 @@
                 });
                 
                 const data = await response.json();
+                console.log('Signup response:', data);
                 
                 if (!response.ok) {
                     throw new Error(data.error || 'Failed to sign up');
@@ -582,15 +603,18 @@
                             <i class="fas fa-utensils"></i> Dietary Restrictions
                         </div>
                         
-                        <div class="checkbox-grid">
-                            ${DIETARY_OPTIONS.map(option => `
-                                <label class="checkbox-item">
-                                    <input type="checkbox" 
-                                           value="${option}" 
-                                           ${formData.dietary_restrictions.includes(option) ? 'checked' : ''}>
-                                    <span>${getDietaryIcon(option)} ${option}</span>
-                                </label>
-                            `).join('')}
+                        <div class="checkbox-grid" id="dietary-grid">
+                            ${DIETARY_OPTIONS.map(option => {
+                                const isChecked = formData.dietary_restrictions.includes(option);
+                                return `
+                                    <div class="checkbox-item ${isChecked ? 'selected' : ''}" data-value="${option}">
+                                        <input type="checkbox" 
+                                               value="${option}" 
+                                               ${isChecked ? 'checked' : ''}>
+                                        <span>${getDietaryIcon(option)} ${option}</span>
+                                    </div>
+                                `;
+                            }).join('')}
                         </div>
                     </div>
 
@@ -608,7 +632,7 @@
                                 const isSelected = selectedDates.includes(date);
                                 return `
                                     <div class="date-item ${isSelected ? 'selected' : ''}" 
-                                         onclick="toggleDate('${date}')">
+                                         data-date="${date}">
                                         <div class="day">${dateObj.getDate()}</div>
                                         <div class="weekday">${dateObj.toLocaleDateString('en-US', { weekday: 'short' })}</div>
                                     </div>
@@ -640,7 +664,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label class="checkbox-item" style="padding: 0; background: transparent;">
+                            <label class="checkbox-item" style="padding: 0.75rem; background: transparent; border: 2px solid ${formData.has_insurance ? 'var(--primary)' : 'rgba(255,255,255,0.1)'};">
                                 <input type="checkbox" id="has_insurance" ${formData.has_insurance ? 'checked' : ''}>
                                 <span>I have current production insurance</span>
                             </label>
@@ -663,7 +687,12 @@
                 </div>
             `;
 
-            // Add event listeners
+            // Add event listeners after rendering
+            attachEventListeners();
+        }
+
+        function attachEventListeners() {
+            // Input fields
             document.getElementById('full_name')?.addEventListener('input', (e) => formData.full_name = e.target.value);
             document.getElementById('phone')?.addEventListener('input', (e) => formData.phone = e.target.value);
             document.getElementById('email')?.addEventListener('input', (e) => formData.email = e.target.value);
@@ -672,19 +701,62 @@
             document.getElementById('emergency_phone')?.addEventListener('input', (e) => formData.emergency_phone = e.target.value);
             document.getElementById('address')?.addEventListener('input', (e) => formData.address = e.target.value);
             document.getElementById('union_status')?.addEventListener('input', (e) => formData.union_status = e.target.value);
-            document.getElementById('has_insurance')?.addEventListener('change', (e) => formData.has_insurance = e.target.checked);
+            
+            // Insurance checkbox
+            document.getElementById('has_insurance')?.addEventListener('change', (e) => {
+                formData.has_insurance = e.target.checked;
+                const parent = e.target.closest('.checkbox-item');
+                if (parent) {
+                    parent.style.borderColor = e.target.checked ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
+                }
+            });
 
-            // Add dietary checkboxes listeners
-            document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(checkbox => {
+            // Dietary checkboxes - improved handling
+            document.querySelectorAll('#dietary-grid .checkbox-item').forEach(item => {
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                
+                // Handle checkbox change
                 checkbox.addEventListener('change', (e) => {
+                    e.stopPropagation();
                     const option = e.target.value;
                     if (e.target.checked) {
                         if (!formData.dietary_restrictions.includes(option)) {
                             formData.dietary_restrictions.push(option);
                         }
+                        item.classList.add('selected');
                     } else {
                         formData.dietary_restrictions = formData.dietary_restrictions.filter(d => d !== option);
+                        item.classList.remove('selected');
                     }
+                    console.log('Dietary restrictions:', formData.dietary_restrictions);
+                });
+
+                // Handle clicking on the item itself (not just checkbox)
+                item.addEventListener('click', (e) => {
+                    if (e.target !== checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        // Trigger change event
+                        const event = new Event('change', { bubbles: true });
+                        checkbox.dispatchEvent(event);
+                    }
+                });
+            });
+
+            // Date selection
+            document.querySelectorAll('.date-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const date = item.dataset.date;
+                    if (!date) return;
+                    
+                    const index = selectedDates.indexOf(date);
+                    if (index === -1) {
+                        selectedDates.push(date);
+                        item.classList.add('selected');
+                    } else {
+                        selectedDates.splice(index, 1);
+                        item.classList.remove('selected');
+                    }
+                    console.log('Selected dates:', selectedDates);
                 });
             });
         }
@@ -738,24 +810,9 @@
             return icons[diet] || '📋';
         }
 
-        window.toggleDate = (date) => {
-            const index = selectedDates.indexOf(date);
-            if (index === -1) {
-                selectedDates.push(date);
-            } else {
-                selectedDates.splice(index, 1);
-            }
-            
-            const dateItems = document.querySelectorAll('.date-item');
-            dateItems.forEach(item => {
-                if (item.textContent.includes(new Date(date).getDate())) {
-                    item.classList.toggle('selected');
-                }
-            });
-        };
-
         window.handleSubmit = () => {
-            // Form data is already updated via event listeners
+            console.log('Submitting with data:', formData);
+            console.log('Selected dates:', selectedDates);
             submitSignup();
         };
     </script>
