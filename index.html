@@ -666,6 +666,43 @@
         .checkbox-grid {
           grid-template-columns: 1fr;
         }
+
+        /* Activity Feed Styles */
+        .activity-feed {
+          scrollbar-width: thin;
+          scrollbar-color: var(--primary) var(--dark);
+        }
+
+        .activity-feed::-webkit-scrollbar {
+          width: 8px;
+        }
+
+        .activity-feed::-webkit-scrollbar-track {
+          background: var(--dark);
+          border-radius: 4px;
+        }
+
+        .activity-feed::-webkit-scrollbar-thumb {
+          background: var(--primary);
+          border-radius: 4px;
+        }
+
+        .activity-feed::-webkit-scrollbar-thumb:hover {
+          background: var(--primary-dark);
+        }
+
+        .activity-item:hover {
+          background: rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item:hover i.fa-chevron-right {
+          color: var(--primary) !important;
+          transform: translateX(4px);
+        }
+
+        .activity-item i.fa-chevron-right {
+          transition: all 0.2s;
+        }
       }
     </style>
   </head>
@@ -1234,7 +1271,7 @@
         }
       }
 
-      function renderDashboard(container) {
+      async function renderDashboard(container) {
         // Calculate stats
         const totalProjects = projects.length;
         const activeProjects = projects.filter(
@@ -1243,15 +1280,6 @@
         const completedProjects = projects.filter(
           (p) => p.status === "completed",
         ).length;
-
-        // Calculate total crew and unique departments
-        let totalCrew = 0;
-        let uniqueDepartments = new Set();
-
-        projects.forEach((project) => {
-          totalCrew += project.total_crew || 0;
-          // We'll need to load department data properly, but for now use a placeholder
-        });
 
         // Calculate upcoming shoots (projects starting in next 7 days)
         const today = new Date();
@@ -1264,6 +1292,57 @@
             p.status === "active" && startDate >= today && startDate <= nextWeek
           );
         }).length;
+
+        // Fetch recent activities
+        let activities = [];
+        try {
+          const response = await fetch(`${API_BASE_URL}/activities?limit=15`);
+          const data = await response.json();
+          activities = data.activities || [];
+        } catch (error) {
+          console.error("Error loading activities:", error);
+        }
+
+        // Helper function to get activity icon and color
+        function getActivityIcon(type) {
+          const icons = {
+            project_created: { icon: "fa-folder-plus", color: "var(--info)" },
+            crew_joined: { icon: "fa-user-plus", color: "var(--success)" },
+            crew_updated: { icon: "fa-user-edit", color: "var(--warning)" },
+            callsheet_sent: { icon: "fa-file-pdf", color: "var(--danger)" },
+            project_completed: {
+              icon: "fa-check-circle",
+              color: "var(--success)",
+            },
+            schedule_assigned: {
+              icon: "fa-calendar-check",
+              color: "var(--secondary)",
+            },
+          };
+          return icons[type] || { icon: "fa-bell", color: "var(--text-muted)" };
+        }
+
+        // Helper function to format activity message
+        function formatActivityMessage(activity) {
+          const timeAgo = getTimeAgo(new Date(activity.timestamp));
+
+          switch (activity.type) {
+            case "project_created":
+              return `📁 New project "${activity.project_name}" was created`;
+            case "crew_joined":
+              return `👤 ${activity.crew_name} joined "${activity.project_name}"`;
+            case "crew_updated":
+              return `✏️ ${activity.crew_name}'s information was updated`;
+            case "callsheet_sent":
+              return `📧 Call sheet sent for "${activity.project_name}"`;
+            case "project_completed":
+              return `✅ Project "${activity.project_name}" was completed`;
+            case "schedule_assigned":
+              return `📅 ${activity.crew_name} was scheduled for "${activity.project_name}"`;
+            default:
+              return `Activity in "${activity.project_name}"`;
+          }
+        }
 
         container.innerHTML = `
     <div class="stats-grid">
@@ -1287,34 +1366,65 @@
 
     <div class="card">
         <div class="card-title">
-            <i class="fas fa-project-diagram"></i> Recent Projects
+            <i class="fas fa-history"></i> Recent Activity
         </div>
-        <div class="project-list" id="recent-projects">
-            ${projects
-              .slice(0, 5)
-              .map(
-                (project) => `
-                <div class="project-item" onclick="selectProject(${project.id})">
-                    <div class="project-info">
-                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
-                        <div class="project-meta">
-                            <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                            <span><i class="fas fa-code"></i> ${project.project_code}</span>
+        <div class="activity-feed" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+            ${
+              activities.length > 0
+                ? activities
+                    .map((activity) => {
+                      const { icon, color } = getActivityIcon(activity.type);
+                      return `
+                <div class="activity-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; cursor: pointer;" onclick="jumpToActivity('${activity.type}', ${activity.project_id}, ${activity.crew_id || "null"})">
+                    <div style="width: 40px; height: 40px; background: ${color}; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 0.25rem;">${formatActivityMessage(activity)}</div>
+                        <div style="color: var(--text-muted); font-size: 0.85rem;">
+                            <i class="far fa-clock"></i> ${getTimeAgo(new Date(activity.timestamp))}
                         </div>
                     </div>
-                    <div class="project-stats">
-                        <div class="project-stat">
-                            <div class="number">${project.total_crew || 0}</div>
-                            <div class="label">Crew(s)</div>
-                        </div>
-                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
                 </div>
-              `,
-              )
-              .join("")}
+              `;
+                    })
+                    .join("")
+                : `
+              <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                  <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                  <p>No recent activity</p>
+              </div>
+            `
+            }
         </div>
     </div>
   `;
+      }
+
+      // Helper function to show "time ago"
+      function getTimeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+
+        const intervals = {
+          year: 31536000,
+          month: 2592000,
+          week: 604800,
+          day: 86400,
+          hour: 3600,
+          minute: 60,
+          second: 1,
+        };
+
+        for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+          const interval = Math.floor(seconds / secondsInUnit);
+          if (interval >= 1) {
+            return interval === 1
+              ? `${interval} ${unit} ago`
+              : `${interval} ${unit}s ago`;
+          }
+        }
+        return "just now";
       }
 
       function renderProjects(container) {
@@ -2142,6 +2252,55 @@
         } catch (error) {
           console.error("Error updating project:", error);
           showNotification("Failed to update project", "error");
+        }
+      };
+
+      // Navigate to relevant section when clicking activity
+      window.jumpToActivity = (type, projectId, crewId) => {
+        const project = projects.find((p) => p.id === projectId);
+        if (!project) return;
+
+        currentProject = project;
+
+        switch (type) {
+          case "project_created":
+          case "project_completed":
+            // Go to projects view
+            document
+              .querySelectorAll(".nav-btn")
+              .forEach((b) => b.classList.remove("active"));
+            document
+              .querySelector('[data-view="projects"]')
+              .classList.add("active");
+            currentView = "projects";
+            renderView();
+            break;
+
+          case "crew_joined":
+          case "crew_updated":
+          case "schedule_assigned":
+            // Go to crew view for this project
+            document
+              .querySelectorAll(".nav-btn")
+              .forEach((b) => b.classList.remove("active"));
+            document
+              .querySelector('[data-view="crew"]')
+              .classList.add("active");
+            currentView = "crew";
+            renderView();
+            break;
+
+          case "callsheet_sent":
+            // Go to call sheets view
+            document
+              .querySelectorAll(".nav-btn")
+              .forEach((b) => b.classList.remove("active"));
+            document
+              .querySelector('[data-view="callsheets"]')
+              .classList.add("active");
+            currentView = "callsheets";
+            renderView();
+            break;
         }
       };
     </script>
