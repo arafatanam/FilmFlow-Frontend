@@ -554,7 +554,7 @@
         background: var(--medium);
         border-radius: 16px;
         padding: 2rem;
-        max-width: 500px;
+        max-width: 600px;
         width: 90%;
         max-height: 80vh;
         overflow-y: auto;
@@ -590,6 +590,44 @@
         border-radius: 0 8px 8px 0;
       }
 
+      /* Checkbox styles for edit modal */
+      .checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+      }
+
+      .checkbox-item {
+        background: var(--dark);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+      }
+
+      .checkbox-item:hover {
+        border-color: var(--primary);
+        background: rgba(255, 45, 85, 0.05);
+      }
+
+      .checkbox-item.selected {
+        border-color: var(--primary);
+        background: rgba(255, 45, 85, 0.1);
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary);
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 1rem;
@@ -621,6 +659,10 @@
 
         .action-buttons .btn {
           width: 100%;
+        }
+
+        .checkbox-grid {
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -655,6 +697,16 @@
 
     <script>
       const API_BASE_URL = "https://filmflow-api.onrender.com/api";
+      
+      // Constants
+      const DEPARTMENTS = [
+        "Camera", "Sound", "Grip", "Electric", "Art Department",
+        "Wardrobe", "Hair & Makeup", "Production", "Directing",
+        "Editing", "VFX", "Catering", "Transportation", "Locations",
+        "Safety", "Script Supervisor", "Stunt Coordination",
+        "Special Effects", "Props", "Set Decoration", "Construction"
+      ];
+
       const DIETARY_OPTIONS = [
         "Vegetarian",
         "Vegan",
@@ -666,6 +718,7 @@
         "Shellfish Allergy",
       ];
 
+      // State
       let currentView = "dashboard";
       let projects = [];
       let currentProject = null;
@@ -673,11 +726,13 @@
       let schedule = [];
       let conflicts = [];
 
+      // Initialize
       document.addEventListener("DOMContentLoaded", () => {
         loadProjects();
         setupNavigation();
       });
 
+      // Navigation
       function setupNavigation() {
         document.querySelectorAll(".nav-btn").forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -691,6 +746,7 @@
         });
       }
 
+      // Helper Functions
       function getDietaryIcon(diet) {
         const icons = {
           "Vegetarian": "🥗",
@@ -705,6 +761,47 @@
         return icons[diet] || "📋";
       }
 
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+
+      function formatDateRange(start, end) {
+        return `${formatDate(start)} - ${formatDate(end)}`;
+      }
+
+      function getInviteLink(code) {
+        return `${window.location.origin}/crew-signup.html?project=${code}`;
+      }
+
+      function getCrewCardClass(member) {
+        if (!member.emergency_name) return "danger";
+        if (
+          !member.dietary_restrictions ||
+          member.dietary_restrictions.length === 0
+        )
+          return "warning";
+        if (!member.has_insurance) return "warning";
+        return "";
+      }
+
+      function getCrewByDepartment() {
+        const byDept = {};
+        crew.forEach((m) => {
+          if (!byDept[m.department]) byDept[m.department] = [];
+          byDept[m.department].push(m);
+        });
+        return Object.entries(byDept);
+      }
+
+      function showNotification(message, type = "info") {
+        alert(message);
+      }
+
+      // API Calls
       async function loadProjects() {
         try {
           const response = await fetch(`${API_BASE_URL}/projects`);
@@ -780,7 +877,6 @@
       async function deleteProject(projectId) {
         const project = projects.find((p) => p.id === projectId);
 
-        // First confirmation
         if (
           !confirm(
             `⚠️ Are you sure you want to delete "${project?.name}"?\n\nThis will permanently delete:\n• All crew signups\n• All schedule assignments\n• All call sheets\n\nThis action CANNOT be undone!`,
@@ -789,7 +885,6 @@
           return;
         }
 
-        // Second confirmation - type DELETE
         const confirmText = prompt(
           'Type "DELETE" to confirm permanent deletion:',
         );
@@ -887,10 +982,9 @@
         }
       }
 
-      // Edit crew member
+      // Edit Crew Member Functions
       async function editCrewMember(crewId) {
         try {
-          // Fetch current crew data
           const response = await fetch(`${API_BASE_URL}/crew/${crewId}`);
           const data = await response.json();
 
@@ -901,7 +995,6 @@
 
           const crew = data.profile;
 
-          // Create modal with edit form
           const modal = document.createElement("div");
           modal.className = "modal";
           modal.innerHTML = `
@@ -913,13 +1006,13 @@
                 <div style="max-height: 70vh; overflow-y: auto; padding: 1rem;">
                     <form id="edit-crew-form">
                         <div class="form-group">
-                            <label>Full Name</label>
+                            <label>Full Name *</label>
                             <input type="text" id="edit-full_name" value="${crew.full_name || ""}" required>
                         </div>
                         
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Phone</label>
+                                <label>Phone *</label>
                                 <input type="tel" id="edit-phone" value="${crew.phone || ""}" required>
                             </div>
                             <div class="form-group">
@@ -930,7 +1023,7 @@
                         </div>
                         
                         <div class="form-group">
-                            <label>Department</label>
+                            <label>Department *</label>
                             <select id="edit-department" required>
                                 <option value="">Select department...</option>
                                 ${DEPARTMENTS.map(
@@ -996,7 +1089,7 @@
                     </form>
                 </div>
             </div>
-        `;
+          `;
 
           document.body.appendChild(modal);
 
@@ -1014,7 +1107,6 @@
               });
             });
 
-          // Insurance checkbox styling
           const insuranceCheckbox =
             document.getElementById("edit-has_insurance");
           const insuranceItem = insuranceCheckbox?.closest(".checkbox-item");
@@ -1031,10 +1123,8 @@
         }
       }
 
-      // Save crew changes
       async function saveCrewChanges(crewId) {
         try {
-          // Collect form data
           const dietaryRestrictions = [];
           document
             .querySelectorAll(
@@ -1047,7 +1137,7 @@
           const updatedData = {
             full_name: document.getElementById("edit-full_name")?.value,
             phone: document.getElementById("edit-phone")?.value,
-            email: document.getElementById("edit-email")?.value, // Email is read-only
+            email: document.getElementById("edit-email")?.value,
             department: document.getElementById("edit-department")?.value,
             emergency_name:
               document.getElementById("edit-emergency_name")?.value || null,
@@ -1063,7 +1153,6 @@
             certifications: [],
           };
 
-          // Validate required fields
           if (
             !updatedData.full_name ||
             !updatedData.phone ||
@@ -1088,14 +1177,13 @@
             throw new Error(data.error);
           }
 
-          // Close modal
           document.querySelector(".modal")?.remove();
 
           showNotification("Crew member updated successfully!", "success");
 
-          // Refresh the current view
           if (currentProject) {
-            loadProjectCrew(currentProject.id);
+            await loadProjectCrew(currentProject.id);
+            renderView();
           }
         } catch (error) {
           console.error("Error updating crew:", error);
@@ -1103,6 +1191,7 @@
         }
       }
 
+      // Render Functions
       function renderView() {
         const content = document.getElementById("main-content");
 
@@ -1142,188 +1231,182 @@
         );
 
         container.innerHTML = `
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">${totalProjects}</div>
-                        <div class="stat-label">Total Projects</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${activeProjects}</div>
-                        <div class="stat-label">Active Projects</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${totalCrew}</div>
-                        <div class="stat-label">Crew Members</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${pendingForms}</div>
-                        <div class="stat-label">Pending Forms</div>
-                    </div>
-                </div>
+          <div class="stats-grid">
+              <div class="stat-card">
+                  <div class="stat-number">${totalProjects}</div>
+                  <div class="stat-label">Total Projects</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-number">${activeProjects}</div>
+                  <div class="stat-label">Active Projects</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-number">${totalCrew}</div>
+                  <div class="stat-label">Crew Members</div>
+              </div>
+              <div class="stat-card">
+                  <div class="stat-number">${pendingForms}</div>
+                  <div class="stat-label">Pending Forms</div>
+              </div>
+          </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-rocket"></i> Quick Actions
-                    </div>
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="goToNewProject()">
-                            <i class="fas fa-plus"></i> New Project
-                        </button>
-                        <button class="btn btn-secondary" onclick="goToSchedule()">
-                            <i class="fas fa-calendar"></i> Manage Schedule
-                        </button>
-                    </div>
-                </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-rocket"></i> Quick Actions
+              </div>
+              <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                  <button class="btn btn-primary" onclick="goToNewProject()">
+                      <i class="fas fa-plus"></i> New Project
+                  </button>
+                  <button class="btn btn-secondary" onclick="goToSchedule()">
+                      <i class="fas fa-calendar"></i> Manage Schedule
+                  </button>
+              </div>
+          </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-project-diagram"></i> Recent Projects
-                    </div>
-                    <div class="project-list" id="recent-projects">
-                        ${projects
-                          .slice(0, 5)
-                          .map(
-                            (project) => `
-                            <div class="project-item" onclick="selectProject(${project.id})">
-                                <div class="project-info">
-                                    <h3>${project.name}</h3>
-                                    <div class="project-meta">
-                                        <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                                        <span><i class="fas fa-code"></i> ${project.project_code}</span>
-                                    </div>
-                                </div>
-                                <div class="project-stats">
-                                    <div class="project-stat">
-                                        <div class="number">${project.total_crew || 0}</div>
-                                        <div class="label">Crew</div>
-                                    </div>
-                                    <div class="project-stat">
-                                        <div class="number">${project.completed_forms || 0}/${project.total_crew || 0}</div>
-                                        <div class="label">Complete</div>
-                                    </div>
-                                </div>
-                            </div>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            `;
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-project-diagram"></i> Recent Projects
+              </div>
+              <div class="project-list" id="recent-projects">
+                  ${projects
+                    .slice(0, 5)
+                    .map(
+                      (project) => `
+                      <div class="project-item" onclick="selectProject(${project.id})">
+                          <div class="project-info">
+                              <h3>${project.name}</h3>
+                              <div class="project-meta">
+                                  <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
+                                  <span><i class="fas fa-code"></i> ${project.project_code}</span>
+                              </div>
+                          </div>
+                          <div class="project-stats">
+                              <div class="project-stat">
+                                  <div class="number">${project.total_crew || 0}</div>
+                                  <div class="label">Crew</div>
+                              </div>
+                              <div class="project-stat">
+                                  <div class="number">${project.completed_forms || 0}/${project.total_crew || 0}</div>
+                                  <div class="label">Complete</div>
+                              </div>
+                          </div>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
       }
 
       function renderProjects(container) {
         container.innerHTML = `
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-plus-circle"></i> Create New Project
-                    </div>
-                    <form id="create-project-form" onsubmit="handleCreateProject(event)">
-                        <div class="form-group">
-                            <label>Project Name</label>
-                            <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Start Date</label>
-                                <input type="date" id="project-start" required>
-                            </div>
-                            <div class="form-group">
-                                <label>End Date</label>
-                                <input type="date" id="project-end" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Location (for weather)</label>
-                            <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-magic"></i> Create Project & Generate Link
-                        </button>
-                    </form>
-                </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-plus-circle"></i> Create New Project
+              </div>
+              <form id="create-project-form" onsubmit="handleCreateProject(event)">
+                  <div class="form-group">
+                      <label>Project Name</label>
+                      <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
+                  </div>
+                  <div class="form-row">
+                      <div class="form-group">
+                          <label>Start Date</label>
+                          <input type="date" id="project-start" required>
+                      </div>
+                      <div class="form-group">
+                          <label>End Date</label>
+                          <input type="date" id="project-end" required>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                      <label>Location (for weather)</label>
+                      <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-magic"></i> Create Project & Generate Link
+                  </button>
+              </form>
+          </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-list"></i> All Projects
-                    </div>
-                    <div class="project-list">
-                        ${projects
-                          .map(
-                            (project) => `
-                            <div class="project-item" style="cursor: default;">
-                                <div class="project-info">
-                                    <h3>${project.name}</h3>
-                                    <div class="project-meta">
-                                        <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                                        <span><i class="fas fa-code"></i> ${project.project_code}</span>
-                                    </div>
-                                    <div class="invite-box">
-                                        <input type="text" value="${getInviteLink(project.project_code)}" readonly>
-                                        <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="project-stats">
-                                    <div class="project-stat">
-                                        <div class="number">${project.total_crew || 0}</div>
-                                        <div class="label">Crew</div>
-                                    </div>
-                                    <div class="project-stat">
-                                        <div class="number">${project.completed_forms || 0}</div>
-                                        <div class="label">Complete</div>
-                                    </div>
-                                    <div class="project-stat">
-                                        <div class="number">${project.pending_forms || 0}</div>
-                                        <div class="label">Pending</div>
-                                    </div>
-                                </div>
-                                <div class="action-buttons">
-                                    <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
-                                    <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
-                                        <i class="fas fa-edit"></i> Edit Dates
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            `;
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-list"></i> All Projects
+              </div>
+              <div class="project-list">
+                  ${projects
+                    .map(
+                      (project) => `
+                      <div class="project-item" style="cursor: default;">
+                          <div class="project-info">
+                              <h3>${project.name}</h3>
+                              <div class="project-meta">
+                                  <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
+                                  <span><i class="fas fa-code"></i> ${project.project_code}</span>
+                              </div>
+                              <div class="invite-box">
+                                  <input type="text" value="${getInviteLink(project.project_code)}" readonly>
+                                  <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
+                                      <i class="fas fa-copy"></i>
+                                  </button>
+                              </div>
+                          </div>
+                          <div class="project-stats">
+                              <div class="project-stat">
+                                  <div class="number">${project.total_crew || 0}</div>
+                                  <div class="label">Crew</div>
+                              </div>
+                              <div class="project-stat">
+                                  <div class="number">${project.completed_forms || 0}</div>
+                                  <div class="label">Complete</div>
+                              </div>
+                              <div class="project-stat">
+                                  <div class="number">${project.pending_forms || 0}</div>
+                                  <div class="label">Pending</div>
+                              </div>
+                          </div>
+                          <div class="action-buttons">
+                              <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
+                                  <i class="fas fa-eye"></i> View
+                              </button>
+                              <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
+                                  <i class="fas fa-edit"></i> Edit Dates
+                              </button>
+                              <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
+                                  <i class="fas fa-trash"></i> Delete
+                              </button>
+                          </div>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
       }
 
       async function renderCrewView(container) {
         if (!currentProject) {
           container.innerHTML = `
-                    <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
-                        <div class="crew-header">
-                            <span class="crew-name">${member.full_name}</span>
-                            <span class="crew-department">${member.department}</span>
+            <div class="card">
+                <div class="card-title">Select a Project</div>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
+                <div class="project-list">
+                    ${projects
+                      .map(
+                        (project) => `
+                        <div class="project-item" onclick="selectProject(${project.id})">
+                            <h3>${project.name}</h3>
+                            <div class="project-meta">${project.project_code}</div>
                         </div>
-                        <div class="crew-details">
-                            <div><i class="fas fa-phone"></i> ${member.phone}</div>
-                            <div><i class="fas fa-envelope"></i> ${member.email}</div>
-                        </div>
-                        <div class="crew-badges">
-                            ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
-                            ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
-                            ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
-                            ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${dietaryIcon(d)} ${d}</span>`).join("")}
-                        </div>
-                        <!-- Add edit button -->
-                        <div style="margin-top: 1rem; text-align: right;">
-                            <button class="btn btn-sm btn-secondary" onclick="editCrewMember(${member.id})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                        </div>
-                    </div>
-                `;
+                      `,
+                      )
+                      .join("")}
+                </div>
+            </div>
+          `;
           return;
         }
 
@@ -1331,84 +1414,89 @@
         const crewByDept = data.byDepartment || {};
 
         container.innerHTML = `
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
-                    </div>
-                    <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
-                        <div>
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
-                            <div style="color: var(--text-muted);">Total Crew</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
-                            <div style="color: var(--text-muted);">Completed</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
-                            <div style="color: var(--text-muted);">Pending</div>
-                        </div>
-                    </div>
-                </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
+              </div>
+              <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
+                      <div style="color: var(--text-muted);">Total Crew</div>
+                  </div>
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
+                      <div style="color: var(--text-muted);">Completed</div>
+                  </div>
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
+                      <div style="color: var(--text-muted);">Pending</div>
+                  </div>
+              </div>
+          </div>
 
-                ${Object.entries(crewByDept)
-                  .map(
-                    ([dept, members]) => `
-                    <div class="card">
-                        <div class="card-title" style="color: var(--secondary);">
-                            ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
-                        </div>
-                        <div class="crew-grid">
-                            ${members
-                              .map(
-                                (member) => `
-                                <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
-                                    <div class="crew-header">
-                                        <span class="crew-name">${member.full_name}</span>
-                                        <span class="crew-department">${member.department}</span>
-                                    </div>
-                                    <div class="crew-details">
-                                        <div><i class="fas fa-phone"></i> ${member.phone}</div>
-                                        <div><i class="fas fa-envelope"></i> ${member.email}</div>
-                                    </div>
-                                    <div class="crew-badges">
-                                        ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
-                                        ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
-                                        ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
-                                        ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${dietaryIcon(d)} ${d}</span>`).join("")}
-                                    </div>
-                                </div>
-                            `,
-                              )
-                              .join("")}
-                        </div>
-                    </div>
-                `,
-                  )
-                  .join("")}
-            `;
+          ${Object.entries(crewByDept)
+            .map(
+              ([dept, members]) => `
+              <div class="card">
+                  <div class="card-title" style="color: var(--secondary);">
+                      ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
+                  </div>
+                  <div class="crew-grid">
+                      ${members
+                        .map(
+                          (member) => `
+                          <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
+                              <div class="crew-header">
+                                  <span class="crew-name">${member.full_name}</span>
+                                  <span class="crew-department">${member.department}</span>
+                              </div>
+                              <div class="crew-details">
+                                  <div><i class="fas fa-phone"></i> ${member.phone}</div>
+                                  <div><i class="fas fa-envelope"></i> ${member.email}</div>
+                              </div>
+                              <div class="crew-badges">
+                                  ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
+                                  ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
+                                  ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
+                                  ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${getDietaryIcon(d)} ${d}</span>`).join("")}
+                              </div>
+                              <div style="margin-top: 1rem; text-align: right;">
+                                  <button class="btn btn-sm btn-secondary" onclick="editCrewMember(${member.id})">
+                                      <i class="fas fa-edit"></i> Edit
+                                  </button>
+                              </div>
+                          </div>
+                        `,
+                        )
+                        .join("")}
+                  </div>
+              </div>
+            `,
+            )
+            .join("")}
+        `;
       }
 
       async function renderScheduleView(container) {
         if (!currentProject) {
           container.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">Select a Project</div>
-                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to manage schedule.</p>
-                        <div class="project-list">
-                            ${projects
-                              .map(
-                                (project) => `
-                                <div class="project-item" onclick="selectProject(${project.id})">
-                                    <h3>${project.name}</h3>
-                                    <div class="project-meta">${project.project_code}</div>
-                                </div>
-                            `,
-                              )
-                              .join("")}
+            <div class="card">
+                <div class="card-title">Select a Project</div>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to manage schedule.</p>
+                <div class="project-list">
+                    ${projects
+                      .map(
+                        (project) => `
+                        <div class="project-item" onclick="selectProject(${project.id})">
+                            <h3>${project.name}</h3>
+                            <div class="project-meta">${project.project_code}</div>
                         </div>
-                    </div>
-                `;
+                      `,
+                      )
+                      .join("")}
+                </div>
+            </div>
+          `;
           return;
         }
 
@@ -1419,47 +1507,47 @@
         ]);
 
         container.innerHTML = `
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
-                    </div>
-                    
-                    ${
-                      conflicts.length > 0
-                        ? `
-                        <div style="background: rgba(255,69,58,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 2rem;">
-                            <h3 style="color: var(--danger); margin-bottom: 0.5rem;">
-                                <i class="fas fa-exclamation-triangle"></i> ${conflicts.length} Conflicts Detected
-                            </h3>
-                            <button class="btn btn-sm btn-warning" onclick="showConflictReport()">
-                                View Report & Solutions
-                            </button>
-                        </div>
-                    `
-                        : ""
-                    }
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
+              </div>
+              
+              ${
+                conflicts.length > 0
+                  ? `
+                  <div style="background: rgba(255,69,58,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 2rem;">
+                      <h3 style="color: var(--danger); margin-bottom: 0.5rem;">
+                          <i class="fas fa-exclamation-triangle"></i> ${conflicts.length} Conflicts Detected
+                      </h3>
+                      <button class="btn btn-sm btn-warning" onclick="showConflictReport()">
+                          View Report & Solutions
+                      </button>
+                  </div>
+                `
+                  : ""
+              }
 
-                    <div id="calendar"></div>
-                </div>
+              <div id="calendar"></div>
+          </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-users"></i> Crew by Department
-                    </div>
-                    <div class="department-grid" id="department-grid">
-                        ${getCrewByDepartment()
-                          .map(
-                            ([dept, members]) => `
-                            <div class="dept-btn" onclick="selectDepartment('${dept}')">
-                                <div style="font-weight: 600;">${dept}</div>
-                                <div class="count">${members.length} crew</div>
-                            </div>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            `;
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-users"></i> Crew by Department
+              </div>
+              <div class="department-grid" id="department-grid">
+                  ${getCrewByDepartment()
+                    .map(
+                      ([dept, members]) => `
+                      <div class="dept-btn" onclick="selectDepartment('${dept}')">
+                          <div style="font-weight: 600;">${dept}</div>
+                          <div class="count">${members.length} crew</div>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
 
         initCalendar();
       }
@@ -1467,135 +1555,214 @@
       async function renderCallSheetsView(container) {
         if (!currentProject) {
           container.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">Select a Project</div>
-                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to generate call sheets.</p>
-                        <div class="project-list">
-                            ${projects
-                              .map(
-                                (project) => `
-                                <div class="project-item" onclick="selectProject(${project.id})">
-                                    <h3>${project.name}</h3>
-                                    <div class="project-meta">${project.project_code}</div>
-                                </div>
-                            `,
-                              )
-                              .join("")}
+            <div class="card">
+                <div class="card-title">Select a Project</div>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to generate call sheets.</p>
+                <div class="project-list">
+                    ${projects
+                      .map(
+                        (project) => `
+                        <div class="project-item" onclick="selectProject(${project.id})">
+                            <h3>${project.name}</h3>
+                            <div class="project-meta">${project.project_code}</div>
                         </div>
-                    </div>
-                `;
+                      `,
+                      )
+                      .join("")}
+                </div>
+            </div>
+          `;
           return;
         }
 
         await loadSchedule(currentProject.id);
 
         container.innerHTML = `
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-file-pdf"></i> Generate Call Sheet
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>Select Date</label>
-                        <select id="callsheet-date">
-                            <option value="">Choose a date...</option>
-                            ${schedule
-                              .map(
-                                (day) => `
-                                <option value="${day.date}">
-                                    ${formatDate(day.date)} (${day.total} crew)
-                                </option>
-                            `,
-                              )
-                              .join("")}
-                        </select>
-                    </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-file-pdf"></i> Generate Call Sheet
+              </div>
+              
+              <div class="form-group">
+                  <label>Select Date</label>
+                  <select id="callsheet-date">
+                      <option value="">Choose a date...</option>
+                      ${schedule
+                        .map(
+                          (day) => `
+                          <option value="${day.date}">
+                              ${formatDate(day.date)} (${day.total} crew)
+                          </option>
+                        `,
+                        )
+                        .join("")}
+                  </select>
+              </div>
 
-                    <div class="form-group">
-                        <label>Call Time</label>
-                        <input type="time" id="callsheet-time" value="06:00">
-                    </div>
+              <div class="form-group">
+                  <label>Call Time</label>
+                  <input type="time" id="callsheet-time" value="06:00">
+              </div>
 
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" id="callsheet-location" value="${currentProject.location || ""}" placeholder="Set location">
-                    </div>
+              <div class="form-group">
+                  <label>Location</label>
+                  <input type="text" id="callsheet-location" value="${currentProject.location || ""}" placeholder="Set location">
+              </div>
 
-                    <div class="form-group">
-                        <label>Scenes</label>
-                        <textarea id="callsheet-scenes" rows="3" placeholder="Scene 1, Scene 2, etc."></textarea>
-                    </div>
+              <div class="form-group">
+                  <label>Scenes</label>
+                  <textarea id="callsheet-scenes" rows="3" placeholder="Scene 1, Scene 2, etc."></textarea>
+              </div>
 
-                    <div class="form-group">
-                        <label>AD Private Notes (not shown to crew)</label>
-                        <textarea id="callsheet-ad-notes" rows="3" placeholder="Internal notes..."></textarea>
-                    </div>
+              <div class="form-group">
+                  <label>AD Private Notes (not shown to crew)</label>
+                  <textarea id="callsheet-ad-notes" rows="3" placeholder="Internal notes..."></textarea>
+              </div>
 
-                    <button class="btn btn-success" onclick="handleGenerateCallSheet()">
-                        <i class="fas fa-paper-plane"></i> Generate & Email Call Sheet
-                    </button>
-                </div>
+              <button class="btn btn-success" onclick="handleGenerateCallSheet()">
+                  <i class="fas fa-paper-plane"></i> Generate & Email Call Sheet
+              </button>
+          </div>
 
-                <div class="card">
-                    <div class="card-title">
-                        <i class="fas fa-history"></i> Recent Call Sheets
-                    </div>
-                    <div id="callsheet-history">
-                        <!-- Will be loaded from API -->
-                    </div>
-                </div>
-            `;
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-history"></i> Recent Call Sheets
+              </div>
+              <div id="callsheet-history">
+                  <!-- Will be loaded from API -->
+              </div>
+          </div>
+        `;
       }
 
-      function formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
+      function initCalendar() {
+        const calendarEl = document.getElementById("calendar");
+        if (!calendarEl) return;
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,dayGridWeek",
+          },
+          events: schedule.map((day) => ({
+            title: `${day.total} crew`,
+            start: day.date,
+            backgroundColor:
+              day.total > 0 ? "var(--success)" : "var(--text-muted)",
+            borderColor: "transparent",
+            extendedProps: { crew: day.crew },
+          })),
+          dateClick: function (info) {
+            const crewCount =
+              schedule.find((d) => d.date === info.dateStr)?.total || 0;
+            if (crewCount > 0) {
+              alert(`Crew assigned: ${crewCount} members`);
+            } else {
+              if (
+                confirm("No crew assigned. Assign department to this date?")
+              ) {
+                const dept = prompt("Enter department name:");
+                if (dept && currentProject) {
+                  assignDepartment(currentProject.id, dept, info.dateStr);
+                }
+              }
+            }
+          },
+          eventDidMount: function (info) {
+            if (info.event.extendedProps.crew) {
+              const hasConflicts = info.event.extendedProps.crew.some(
+                (c) => c.conflict,
+              );
+              if (hasConflicts) {
+                info.el.style.backgroundColor = "var(--warning)";
+              }
+            }
+          },
         });
+
+        calendar.render();
       }
 
-      function formatDateRange(start, end) {
-        return `${formatDate(start)} - ${formatDate(end)}`;
+      function showConflictReport() {
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h2 style="color: var(--danger);">⚠️ Conflict Report</h2>
+                  <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+              </div>
+              <div style="max-height: 60vh; overflow-y: auto;">
+                  ${conflicts
+                    .map(
+                      (conflict) => `
+                      <div class="conflict-item">
+                          <strong>${conflict.crew_name}</strong> - ${formatDate(conflict.shoot_date)}
+                          <div style="margin-top: 0.5rem; font-size: 0.9rem;">
+                              ${conflict.is_double_booked ? "• Double booked on another project<br>" : ""}
+                              ${conflict.is_personal_unavailable ? "• Marked as unavailable<br>" : ""}
+                              ${conflict.missing_emergency ? "• Missing emergency contact<br>" : ""}
+                              ${conflict.missing_dietary ? "• Missing dietary info<br>" : ""}
+                              ${conflict.insurance_issue ? "• Insurance issue<br>" : ""}
+                          </div>
+                          <div class="conflict-suggestion">
+                              <i class="fas fa-lightbulb"></i> 
+                              ${getConflictSuggestion(conflict)}
+                          </div>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
       }
 
-      function getInviteLink(code) {
-        return `${window.location.origin}/crew-signup.html?project=${code}`;
+      function getConflictSuggestion(conflict) {
+        if (conflict.is_double_booked) {
+          return "Check available alternates in same department";
+        }
+        if (conflict.missing_emergency) {
+          return "Send reminder to update emergency contact";
+        }
+        if (conflict.missing_dietary) {
+          return "Send reminder to add dietary restrictions";
+        }
+        if (conflict.insurance_issue) {
+          return "Verify insurance before shoot day";
+        }
+        return "Contact crew member to resolve";
       }
 
-      function dietaryIcon(diet) {
-        const icons = {
-          Vegetarian: "🥗",
-          Vegan: "🌱",
-          "Gluten-Free": "🌾",
-          "Nut Allergy": "🥜",
-          "Dairy-Free": "🥛",
-          Halal: "☪️",
-          Kosher: "✡️",
-        };
-        return icons[diet] || "⚠️";
+      function showFlagsModal(flags) {
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h2 style="color: var(--warning);">⚠️ AD Flags</h2>
+                  <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+              </div>
+              <div style="max-height: 60vh; overflow-y: auto;">
+                  ${flags
+                    .map(
+                      (flag) => `
+                      <div style="padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                          ${flag}
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
       }
 
-      function getCrewCardClass(member) {
-        if (!member.emergency_name) return "danger";
-        if (
-          !member.dietary_restrictions ||
-          member.dietary_restrictions.length === 0
-        )
-          return "warning";
-        if (!member.has_insurance) return "warning";
-        return "";
-      }
-
-      function getCrewByDepartment() {
-        const byDept = {};
-        crew.forEach((m) => {
-          if (!byDept[m.department]) byDept[m.department] = [];
-          byDept[m.department].push(m);
-        });
-        return Object.entries(byDept);
-      }
-
+      // Window Functions
       window.selectProject = async (projectId) => {
         currentProject = projects.find((p) => p.id === projectId);
         await Promise.all([
@@ -1604,7 +1771,6 @@
           loadConflicts(projectId),
         ]);
 
-        // Switch to crew view
         document
           .querySelectorAll(".nav-btn")
           .forEach((b) => b.classList.remove("active"));
@@ -1699,138 +1865,6 @@
           ad_notes,
         });
       };
-
-      window.showConflictReport = () => {
-        const modal = document.createElement("div");
-        modal.className = "modal";
-        modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 style="color: var(--danger);">⚠️ Conflict Report</h2>
-                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-                    </div>
-                    <div style="max-height: 60vh; overflow-y: auto;">
-                        ${conflicts
-                          .map(
-                            (conflict) => `
-                            <div class="conflict-item">
-                                <strong>${conflict.crew_name}</strong> - ${formatDate(conflict.shoot_date)}
-                                <div style="margin-top: 0.5rem; font-size: 0.9rem;">
-                                    ${conflict.is_double_booked ? "• Double booked on another project<br>" : ""}
-                                    ${conflict.is_personal_unavailable ? "• Marked as unavailable<br>" : ""}
-                                    ${conflict.missing_emergency ? "• Missing emergency contact<br>" : ""}
-                                    ${conflict.missing_dietary ? "• Missing dietary info<br>" : ""}
-                                    ${conflict.insurance_issue ? "• Insurance issue<br>" : ""}
-                                </div>
-                                <div class="conflict-suggestion">
-                                    <i class="fas fa-lightbulb"></i> 
-                                    ${getConflictSuggestion(conflict)}
-                                </div>
-                            </div>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            `;
-        document.body.appendChild(modal);
-      };
-
-      function getConflictSuggestion(conflict) {
-        if (conflict.is_double_booked) {
-          return "Check available alternates in same department";
-        }
-        if (conflict.missing_emergency) {
-          return "Send reminder to update emergency contact";
-        }
-        if (conflict.missing_dietary) {
-          return "Send reminder to add dietary restrictions";
-        }
-        if (conflict.insurance_issue) {
-          return "Verify insurance before shoot day";
-        }
-        return "Contact crew member to resolve";
-      }
-
-      function showFlagsModal(flags) {
-        const modal = document.createElement("div");
-        modal.className = "modal";
-        modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2 style="color: var(--warning);">⚠️ AD Flags</h2>
-                        <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-                    </div>
-                    <div style="max-height: 60vh; overflow-y: auto;">
-                        ${flags
-                          .map(
-                            (flag) => `
-                            <div style="padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                                ${flag}
-                            </div>
-                        `,
-                          )
-                          .join("")}
-                    </div>
-                </div>
-            `;
-        document.body.appendChild(modal);
-      }
-
-      function showNotification(message, type = "info") {
-        // Simple alert for now
-        alert(message);
-      }
-
-      function initCalendar() {
-        const calendarEl = document.getElementById("calendar");
-        if (!calendarEl) return;
-
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: "dayGridMonth",
-          headerToolbar: {
-            left: "prev,next today",
-            center: "title",
-            right: "dayGridMonth,dayGridWeek",
-          },
-          events: schedule.map((day) => ({
-            title: `${day.total} crew`,
-            start: day.date,
-            backgroundColor:
-              day.total > 0 ? "var(--success)" : "var(--text-muted)",
-            borderColor: "transparent",
-            extendedProps: { crew: day.crew },
-          })),
-          dateClick: function (info) {
-            const crewCount =
-              schedule.find((d) => d.date === info.dateStr)?.total || 0;
-            if (crewCount > 0) {
-              alert(`Crew assigned: ${crewCount} members`);
-            } else {
-              if (
-                confirm("No crew assigned. Assign department to this date?")
-              ) {
-                const dept = prompt("Enter department name:");
-                if (dept && currentProject) {
-                  assignDepartment(currentProject.id, dept, info.dateStr);
-                }
-              }
-            }
-          },
-          eventDidMount: function (info) {
-            if (info.event.extendedProps.crew) {
-              const hasConflicts = info.event.extendedProps.crew.some(
-                (c) => c.conflict,
-              );
-              if (hasConflicts) {
-                info.el.style.backgroundColor = "var(--warning)";
-              }
-            }
-          },
-        });
-
-        calendar.render();
-      }
 
       window.editProjectDates = async (projectId) => {
         const project = projects.find((p) => p.id === projectId);
