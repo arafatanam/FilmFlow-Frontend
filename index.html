@@ -1,833 +1,1147 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+    />
     <title>FilmFlow Admin - Production Management</title>
-    
+
     <!-- Fonts & Icons -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+
     <!-- Calendar Library -->
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <link
+      href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-    
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        :root {
-            --primary: #FF2D55;
-            --primary-dark: #E61E44;
-            --secondary: #FFD60A;
-            --dark: #1C1C1E;
-            --medium: #2C2C2E;
-            --light: #F2F2F7;
-            --text: #FFFFFF;
-            --text-muted: #98989D;
-            --success: #30D158;
-            --warning: #FF9F0A;
-            --danger: #FF453A;
-            --info: #0A84FF;
-            
-            --camera: #0A84FF;
-            --sound: #30D158;
-            --grip: #FF9F0A;
-            --electric: #FFD60A;
-            --art: #BF5AF2;
-            --wardrobe: #FF2D55;
-            --makeup: #FF375F;
-            --production: #64D2FF;
-            --directing: #00C7BE;
-        }
+      :root {
+        --primary: #ff2d55;
+        --primary-dark: #e61e44;
+        --secondary: #ffd60a;
+        --dark: #1c1c1e;
+        --medium: #2c2c2e;
+        --light: #f2f2f7;
+        --text: #ffffff;
+        --text-muted: #98989d;
+        --success: #30d158;
+        --warning: #ff9f0a;
+        --danger: #ff453a;
+        --info: #0a84ff;
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            min-height: 100vh;
-            line-height: 1.5;
-        }
+        --camera: #0a84ff;
+        --sound: #30d158;
+        --grip: #ff9f0a;
+        --electric: #ffd60a;
+        --art: #bf5af2;
+        --wardrobe: #ff2d55;
+        --makeup: #ff375f;
+        --production: #64d2ff;
+        --directing: #00c7be;
+      }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary) 0%, #FF6B6B 100%);
-            padding: 1.5rem 2rem;
-            box-shadow: 0 4px 20px rgba(255, 45, 85, 0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+      body {
+        font-family: "Inter", sans-serif;
+        background: var(--dark);
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
 
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
+      .header {
+        background: linear-gradient(135deg, var(--primary) 0%, #ff6b6b 100%);
+        padding: 1.5rem 2rem;
+        box-shadow: 0 4px 20px rgba(255, 45, 85, 0.3);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
 
-        .header h1 i {
-            margin-right: 10px;
-        }
+      .header h1 {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
 
-        .header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 5px;
-        }
+      .header h1 i {
+        margin-right: 10px;
+      }
 
-        .nav {
-            display: flex;
-            gap: 0.5rem;
-            padding: 1rem 2rem;
-            background: var(--medium);
-            border-bottom: 2px solid var(--primary);
-            overflow-x: auto;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-        }
+      .header p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-top: 5px;
+      }
 
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+      .nav {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem 2rem;
+        background: var(--medium);
+        border-bottom: 2px solid var(--primary);
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
 
-        .nav-btn i {
-            font-size: 1rem;
-        }
+      .nav-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-        .nav-btn:hover {
-            color: var(--text);
-            background: rgba(255,255,255,0.1);
-        }
+      .nav-btn i {
+        font-size: 1rem;
+      }
 
-        .nav-btn.active {
-            background: var(--primary);
-            color: white;
-        }
+      .nav-btn:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.1);
+      }
 
+      .nav-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .container {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .card {
+        background: var(--medium);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .card-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .stat-card {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 4px solid var(--primary);
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--secondary);
+        line-height: 1;
+      }
+
+      .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--secondary);
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--text);
+        font-family: "Inter", sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(255, 45, 85, 0.2);
+      }
+
+      .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 45, 85, 0.3);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .btn-success {
+        background: var(--success);
+        color: white;
+      }
+
+      .btn-warning {
+        background: var(--warning);
+        color: white;
+      }
+
+      .btn-danger {
+        background: var(--danger);
+        color: white;
+      }
+
+      .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.85rem;
+      }
+
+      .project-list {
+        display: grid;
+        gap: 1rem;
+      }
+
+      .project-item {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+
+      .project-item:hover {
+        border-color: var(--primary);
+        transform: translateX(5px);
+      }
+
+      .project-info h3 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .project-meta {
+        display: flex;
+        gap: 1rem;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+      }
+
+      .project-stats {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .project-stat {
+        text-align: center;
+        padding: 0 1rem;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .project-stat .number {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--secondary);
+      }
+
+      .project-stat .label {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+      }
+
+      .invite-box {
+        background: var(--dark);
+        border: 2px dashed var(--success);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+      }
+
+      .invite-box input {
+        flex: 1;
+        background: var(--medium);
+        border: none;
+      }
+
+      .crew-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+      }
+
+      .crew-card {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1.25rem;
+        border-left: 4px solid;
+        transition: all 0.2s;
+      }
+
+      .crew-card.warning {
+        border-left-color: var(--warning);
+        background: linear-gradient(
+          90deg,
+          rgba(255, 159, 10, 0.1),
+          transparent
+        );
+      }
+
+      .crew-card.danger {
+        border-left-color: var(--danger);
+        background: linear-gradient(90deg, rgba(255, 69, 58, 0.1), transparent);
+      }
+
+      .crew-card.dept-camera {
+        border-left-color: var(--camera);
+      }
+      .crew-card.dept-sound {
+        border-left-color: var(--sound);
+      }
+      .crew-card.dept-grip {
+        border-left-color: var(--grip);
+      }
+      .crew-card.dept-electric {
+        border-left-color: var(--electric);
+      }
+      .crew-card.dept-art {
+        border-left-color: var(--art);
+      }
+      .crew-card.dept-wardrobe {
+        border-left-color: var(--wardrobe);
+      }
+      .crew-card.dept-production {
+        border-left-color: var(--production);
+      }
+
+      .crew-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.75rem;
+      }
+
+      .crew-name {
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+
+      .crew-department {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+      }
+
+      .crew-details {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: 0.5rem 0;
+      }
+
+      .crew-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 0.75rem;
+      }
+
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+
+      .badge-warning {
+        background: rgba(255, 159, 10, 0.2);
+        color: var(--warning);
+        border: 1px solid var(--warning);
+      }
+
+      .badge-danger {
+        background: rgba(255, 69, 58, 0.2);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+      }
+
+      .badge-success {
+        background: rgba(48, 209, 88, 0.2);
+        color: var(--success);
+        border: 1px solid var(--success);
+      }
+
+      #calendar {
+        background: var(--dark);
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+      }
+
+      .fc {
+        background: var(--dark);
+        color: var(--text);
+      }
+
+      .fc-toolbar-title {
+        color: var(--text) !important;
+      }
+
+      .fc-button {
+        background: var(--medium) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text) !important;
+      }
+
+      .fc-button:hover {
+        background: var(--primary) !important;
+      }
+
+      .fc-day {
+        background: var(--medium);
+      }
+
+      .fc-day-today {
+        background: rgba(255, 45, 85, 0.1) !important;
+      }
+
+      .department-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+
+      .dept-btn {
+        background: var(--dark);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .dept-btn:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+      }
+
+      .dept-btn .count {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+      }
+
+      .conflict-item {
+        background: rgba(255, 69, 58, 0.1);
+        border-left: 4px solid var(--danger);
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .conflict-suggestion {
+        background: var(--dark);
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: var(--success);
+      }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: var(--medium);
+        border-radius: 16px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .delete-confirm {
+        background: rgba(255, 69, 58, 0.1);
+        border-left: 4px solid var(--danger);
+        padding: 1rem;
+        margin: 1rem 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      @media (max-width: 768px) {
         .container {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: var(--medium);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            color: var(--secondary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--secondary);
-            line-height: 1;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
+          padding: 1rem;
         }
 
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--secondary);
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(255,45,85,0.2);
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(255,45,85,0.3);
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            color: var(--text);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-warning {
-            background: var(--warning);
-            color: white;
-        }
-
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-        }
-
-        .btn-sm {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-        }
-
-        .project-list {
-            display: grid;
-            gap: 1rem;
+          grid-template-columns: 1fr;
         }
 
         .project-item {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1.25rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .project-item:hover {
-            border-color: var(--primary);
-            transform: translateX(5px);
-        }
-
-        .project-info h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .project-meta {
-            display: flex;
-            gap: 1rem;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+          flex-direction: column;
+          align-items: start;
+          gap: 1rem;
         }
 
         .project-stats {
-            display: flex;
-            gap: 1rem;
+          width: 100%;
+          justify-content: space-around;
         }
 
-        .project-stat {
-            text-align: center;
-            padding: 0 1rem;
-            border-left: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .project-stat .number {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--secondary);
-        }
-
-        .project-stat .label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-        }
-
-        .invite-box {
-            background: var(--dark);
-            border: 2px dashed var(--success);
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 1rem 0;
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-        }
-
-        .invite-box input {
-            flex: 1;
-            background: var(--medium);
-            border: none;
-        }
-
-        .crew-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-        }
-
-        .crew-card {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1.25rem;
-            border-left: 4px solid;
-            transition: all 0.2s;
-        }
-
-        .crew-card.warning {
-            border-left-color: var(--warning);
-            background: linear-gradient(90deg, rgba(255,159,10,0.1), transparent);
-        }
-
-        .crew-card.danger {
-            border-left-color: var(--danger);
-            background: linear-gradient(90deg, rgba(255,69,58,0.1), transparent);
-        }
-
-        .crew-card.dept-camera { border-left-color: var(--camera); }
-        .crew-card.dept-sound { border-left-color: var(--sound); }
-        .crew-card.dept-grip { border-left-color: var(--grip); }
-        .crew-card.dept-electric { border-left-color: var(--electric); }
-        .crew-card.dept-art { border-left-color: var(--art); }
-        .crew-card.dept-wardrobe { border-left-color: var(--wardrobe); }
-        .crew-card.dept-production { border-left-color: var(--production); }
-
-        .crew-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 0.75rem;
-        }
-
-        .crew-name {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-
-        .crew-department {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            background: rgba(255,255,255,0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-        }
-
-        .crew-details {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin: 0.5rem 0;
-        }
-
-        .crew-badges {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-top: 0.75rem;
-        }
-
-        .badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-        }
-
-        .badge-warning {
-            background: rgba(255,159,10,0.2);
-            color: var(--warning);
-            border: 1px solid var(--warning);
-        }
-
-        .badge-danger {
-            background: rgba(255,69,58,0.2);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-        }
-
-        .badge-success {
-            background: rgba(48,209,88,0.2);
-            color: var(--success);
-            border: 1px solid var(--success);
-        }
-
-        #calendar {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 1rem 0;
-        }
-
-        .fc {
-            background: var(--dark);
-            color: var(--text);
-        }
-
-        .fc-toolbar-title {
-            color: var(--text) !important;
-        }
-
-        .fc-button {
-            background: var(--medium) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: var(--text) !important;
-        }
-
-        .fc-button:hover {
-            background: var(--primary) !important;
-        }
-
-        .fc-day {
-            background: var(--medium);
-        }
-
-        .fc-day-today {
-            background: rgba(255,45,85,0.1) !important;
-        }
-
-        .department-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 0.75rem;
-            margin: 1rem 0;
-        }
-
-        .dept-btn {
-            background: var(--dark);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .dept-btn:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-        }
-
-        .dept-btn .count {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        .conflict-item {
-            background: rgba(255,69,58,0.1);
-            border-left: 4px solid var(--danger);
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            border-radius: 0 8px 8px 0;
-        }
-
-        .conflict-suggestion {
-            background: var(--dark);
-            padding: 0.75rem;
-            margin-top: 0.5rem;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            color: var(--success);
-        }
-
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            background: var(--medium);
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
+        .nav {
+          padding: 0.5rem 1rem;
         }
 
         .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
+          flex-direction: column;
+          width: 100%;
         }
 
-        .delete-confirm {
-            background: rgba(255,69,58,0.1);
-            border-left: 4px solid var(--danger);
-            padding: 1rem;
-            margin: 1rem 0;
-            border-radius: 0 8px 8px 0;
+        .action-buttons .btn {
+          width: 100%;
         }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
-            }
-            
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .project-item {
-                flex-direction: column;
-                align-items: start;
-                gap: 1rem;
-            }
-            
-            .project-stats {
-                width: 100%;
-                justify-content: space-around;
-            }
-            
-            .nav {
-                padding: 0.5rem 1rem;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .action-buttons .btn {
-                width: 100%;
-            }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div id="root">
-        <div class="header">
-            <h1><i class="fas fa-film"></i> FilmFlow Admin</h1>
-            <p>Production Management Dashboard</p>
-        </div>
+      <div class="header">
+        <h1><i class="fas fa-film"></i> FilmFlow Admin</h1>
+        <p>Production Management Dashboard</p>
+      </div>
 
-        <div class="nav" id="navigation">
-            <button class="nav-btn active" data-view="dashboard">
-                <i class="fas fa-chart-pie"></i> Dashboard
-            </button>
-            <button class="nav-btn" data-view="projects">
-                <i class="fas fa-folder"></i> Projects
-            </button>
-            <button class="nav-btn" data-view="crew">
-                <i class="fas fa-users"></i> Crew
-            </button>
-            <button class="nav-btn" data-view="schedule">
-                <i class="fas fa-calendar-alt"></i> Schedule
-            </button>
-            <button class="nav-btn" data-view="callsheets">
-                <i class="fas fa-file-pdf"></i> Call Sheets
-            </button>
-        </div>
+      <div class="nav" id="navigation">
+        <button class="nav-btn active" data-view="dashboard">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </button>
+        <button class="nav-btn" data-view="projects">
+          <i class="fas fa-folder"></i> Projects
+        </button>
+        <button class="nav-btn" data-view="crew">
+          <i class="fas fa-users"></i> Crew
+        </button>
+        <button class="nav-btn" data-view="schedule">
+          <i class="fas fa-calendar-alt"></i> Schedule
+        </button>
+        <button class="nav-btn" data-view="callsheets">
+          <i class="fas fa-file-pdf"></i> Call Sheets
+        </button>
+      </div>
 
-        <div class="container" id="main-content"></div>
+      <div class="container" id="main-content"></div>
     </div>
 
     <script>
-        const API_BASE_URL = 'https://filmflow-api.onrender.com/api';
-        
-        let currentView = 'dashboard';
-        let projects = [];
-        let currentProject = null;
-        let crew = [];
-        let schedule = [];
-        let conflicts = [];
+      const API_BASE_URL = "https://filmflow-api.onrender.com/api";
+      const DIETARY_OPTIONS = [
+        "Vegetarian",
+        "Vegan",
+        "Gluten-Free",
+        "Nut Allergy",
+        "Dairy-Free",
+        "Halal",
+        "Kosher",
+        "Shellfish Allergy",
+      ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProjects();
-            setupNavigation();
+      let currentView = "dashboard";
+      let projects = [];
+      let currentProject = null;
+      let crew = [];
+      let schedule = [];
+      let conflicts = [];
+
+      document.addEventListener("DOMContentLoaded", () => {
+        loadProjects();
+        setupNavigation();
+      });
+
+      function setupNavigation() {
+        document.querySelectorAll(".nav-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll(".nav-btn")
+              .forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+            currentView = btn.dataset.view;
+            renderView();
+          });
         });
+      }
 
-        function setupNavigation() {
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentView = btn.dataset.view;
-                    renderView();
-                });
+      function getDietaryIcon(diet) {
+        const icons = {
+          Vegetarian: "🥗",
+          Vegan: "🌱",
+          "Gluten-Free": "🌾",
+          "Nut Allergy": "🥜",
+          "Dairy-Free": "🥛",
+          Halal: "☪️",
+          Kosher: "✡️",
+          "Shellfish Allergy": "🦐",
+        };
+        return icons[diet] || "📋";
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/projects`);
+          const data = await response.json();
+          projects = data.projects || [];
+          renderView();
+        } catch (error) {
+          console.error("Error loading projects:", error);
+          showNotification("Failed to load projects", "error");
+        }
+      }
+
+      async function loadProjectCrew(projectId) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/admin/project/${projectId}/crew`,
+          );
+          const data = await response.json();
+          crew = data.crew || [];
+          return data;
+        } catch (error) {
+          console.error("Error loading crew:", error);
+          return { crew: [] };
+        }
+      }
+
+      async function loadSchedule(projectId) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/schedule/project/${projectId}`,
+          );
+          const data = await response.json();
+          schedule = data.schedule || [];
+          return data;
+        } catch (error) {
+          console.error("Error loading schedule:", error);
+          return { schedule: [] };
+        }
+      }
+
+      async function loadConflicts(projectId) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/schedule/project/${projectId}/conflicts`,
+          );
+          const data = await response.json();
+          conflicts = data.conflicts || [];
+          return data;
+        } catch (error) {
+          console.error("Error loading conflicts:", error);
+          return { conflicts: [] };
+        }
+      }
+
+      async function createProject(projectData) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/projects`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(projectData),
+          });
+          const data = await response.json();
+          if (data.error) throw new Error(data.error);
+          showNotification("Project created successfully!", "success");
+          loadProjects();
+          return data;
+        } catch (error) {
+          console.error("Error creating project:", error);
+          showNotification("Failed to create project", "error");
+        }
+      }
+
+      async function deleteProject(projectId) {
+        const project = projects.find((p) => p.id === projectId);
+
+        // First confirmation
+        if (
+          !confirm(
+            `⚠️ Are you sure you want to delete "${project?.name}"?\n\nThis will permanently delete:\n• All crew signups\n• All schedule assignments\n• All call sheets\n\nThis action CANNOT be undone!`,
+          )
+        ) {
+          return;
+        }
+
+        // Second confirmation - type DELETE
+        const confirmText = prompt(
+          'Type "DELETE" to confirm permanent deletion:',
+        );
+        if (confirmText !== "DELETE") {
+          showNotification("Deletion cancelled", "info");
+          return;
+        }
+
+        try {
+          showNotification("Deleting project...", "info");
+
+          const response = await fetch(
+            `${API_BASE_URL}/projects/${projectId}`,
+            {
+              method: "DELETE",
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showNotification(
+              `Project "${project?.name}" deleted successfully`,
+              "success",
+            );
+            if (currentProject?.id === projectId) {
+              currentProject = null;
+            }
+            loadProjects();
+          } else {
+            throw new Error(data.error || "Failed to delete project");
+          }
+        } catch (error) {
+          console.error("Error deleting project:", error);
+          showNotification("Failed to delete project", "error");
+        }
+      }
+
+      async function assignDepartment(projectId, department, date) {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/schedule/assign-department`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                project_id: projectId,
+                department,
+                shoot_date: date,
+              }),
+            },
+          );
+          const data = await response.json();
+          if (data.hasConflicts) {
+            showNotification(
+              `Assigned with ${data.conflicts} conflicts`,
+              "warning",
+            );
+          } else {
+            showNotification(
+              `Assigned ${data.assigned} crew members`,
+              "success",
+            );
+          }
+          loadSchedule(projectId);
+          return data;
+        } catch (error) {
+          console.error("Error assigning department:", error);
+          showNotification("Failed to assign department", "error");
+        }
+      }
+
+      async function generateCallSheet(projectId, data) {
+        try {
+          const response = await fetch(`${API_BASE_URL}/callsheet/generate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ project_id: projectId, ...data }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            showNotification(
+              `Call sheet sent to ${result.crew_count} crew members`,
+              "success",
+            );
+            if (result.ad_flags && result.ad_flags.length > 0) {
+              showFlagsModal(result.ad_flags);
+            }
+          }
+          return result;
+        } catch (error) {
+          console.error("Error generating call sheet:", error);
+          showNotification("Failed to generate call sheet", "error");
+        }
+      }
+
+      // Edit crew member
+      async function editCrewMember(crewId) {
+        try {
+          // Fetch current crew data
+          const response = await fetch(`${API_BASE_URL}/crew/${crewId}`);
+          const data = await response.json();
+
+          if (data.error) {
+            showNotification("Failed to load crew data", "error");
+            return;
+          }
+
+          const crew = data.profile;
+
+          // Create modal with edit form
+          const modal = document.createElement("div");
+          modal.className = "modal";
+          modal.innerHTML = `
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2 style="color: var(--secondary);">Edit Crew Member</h2>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div style="max-height: 70vh; overflow-y: auto; padding: 1rem;">
+                    <form id="edit-crew-form">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="edit-full_name" value="${crew.full_name || ""}" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="tel" id="edit-phone" value="${crew.phone || ""}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="edit-email" value="${crew.email || ""}" required readonly style="background: rgba(255,255,255,0.05);">
+                                <small style="color: var(--text-muted);">Email cannot be changed</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Department</label>
+                            <select id="edit-department" required>
+                                <option value="">Select department...</option>
+                                ${DEPARTMENTS.map(
+                                  (dept) => `
+                                    <option value="${dept}" ${crew.department === dept ? "selected" : ""}>${dept}</option>
+                                `,
+                                ).join("")}
+                            </select>
+                        </div>
+                        
+                        <div class="card" style="background: var(--dark); padding: 1rem; margin: 1rem 0;">
+                            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Dietary Restrictions</h3>
+                            <div class="checkbox-grid" id="edit-dietary-grid">
+                                ${DIETARY_OPTIONS.map((option) => {
+                                  const isChecked =
+                                    crew.dietary_restrictions?.includes(option);
+                                  return `
+                                        <label class="checkbox-item" style="background: transparent; ${isChecked ? "border-color: var(--primary);" : ""}">
+                                            <input type="checkbox" value="${option}" ${isChecked ? "checked" : ""}>
+                                            <span>${getDietaryIcon(option)} ${option}</span>
+                                        </label>
+                                    `;
+                                }).join("")}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Emergency Contact Name</label>
+                                <input type="text" id="edit-emergency_name" value="${crew.emergency_name || ""}">
+                            </div>
+                            <div class="form-group">
+                                <label>Emergency Contact Phone</label>
+                                <input type="tel" id="edit-emergency_phone" value="${crew.emergency_phone || ""}">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-item" style="padding: 0.75rem; background: transparent; border: 2px solid ${crew.has_insurance ? "var(--primary)" : "rgba(255,255,255,0.1)"};">
+                                <input type="checkbox" id="edit-has_insurance" ${crew.has_insurance ? "checked" : ""}>
+                                <span>Has production insurance</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Union Status</label>
+                            <input type="text" id="edit-union_status" value="${crew.union_status || ""}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea id="edit-address" rows="2">${crew.address || ""}</textarea>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                            <button type="button" class="btn btn-success" onclick="saveCrewChanges(${crew.id})">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+          document.body.appendChild(modal);
+
+          // Add event listeners for checkbox styling
+          document
+            .querySelectorAll("#edit-dietary-grid .checkbox-item")
+            .forEach((item) => {
+              const checkbox = item.querySelector('input[type="checkbox"]');
+              checkbox.addEventListener("change", () => {
+                if (checkbox.checked) {
+                  item.style.borderColor = "var(--primary)";
+                } else {
+                  item.style.borderColor = "rgba(255,255,255,0.1)";
+                }
+              });
             });
-        }
 
-        async function loadProjects() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/projects`);
-                const data = await response.json();
-                projects = data.projects || [];
-                renderView();
-            } catch (error) {
-                console.error('Error loading projects:', error);
-                showNotification('Failed to load projects', 'error');
-            }
+          // Insurance checkbox styling
+          const insuranceCheckbox =
+            document.getElementById("edit-has_insurance");
+          const insuranceItem = insuranceCheckbox?.closest(".checkbox-item");
+          if (insuranceCheckbox && insuranceItem) {
+            insuranceCheckbox.addEventListener("change", () => {
+              insuranceItem.style.borderColor = insuranceCheckbox.checked
+                ? "var(--primary)"
+                : "rgba(255,255,255,0.1)";
+            });
+          }
+        } catch (error) {
+          console.error("Error loading crew for edit:", error);
+          showNotification("Failed to load crew data", "error");
         }
+      }
 
-        async function loadProjectCrew(projectId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/project/${projectId}/crew`);
-                const data = await response.json();
-                crew = data.crew || [];
-                return data;
-            } catch (error) {
-                console.error('Error loading crew:', error);
-                return { crew: [] };
-            }
+      // Save crew changes
+      async function saveCrewChanges(crewId) {
+        try {
+          // Collect form data
+          const dietaryRestrictions = [];
+          document
+            .querySelectorAll(
+              '#edit-dietary-grid input[type="checkbox"]:checked',
+            )
+            .forEach((cb) => {
+              dietaryRestrictions.push(cb.value);
+            });
+
+          const updatedData = {
+            full_name: document.getElementById("edit-full_name")?.value,
+            phone: document.getElementById("edit-phone")?.value,
+            email: document.getElementById("edit-email")?.value, // Email is read-only
+            department: document.getElementById("edit-department")?.value,
+            emergency_name:
+              document.getElementById("edit-emergency_name")?.value || null,
+            emergency_phone:
+              document.getElementById("edit-emergency_phone")?.value || null,
+            dietary_restrictions: dietaryRestrictions,
+            address: document.getElementById("edit-address")?.value || null,
+            union_status:
+              document.getElementById("edit-union_status")?.value || null,
+            has_insurance:
+              document.getElementById("edit-has_insurance")?.checked || false,
+            insurance_expiry: null,
+            certifications: [],
+          };
+
+          // Validate required fields
+          if (
+            !updatedData.full_name ||
+            !updatedData.phone ||
+            !updatedData.email ||
+            !updatedData.department
+          ) {
+            alert("Please fill in all required fields");
+            return;
+          }
+
+          showNotification("Updating crew member...", "info");
+
+          const response = await fetch(`${API_BASE_URL}/crew/profile`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedData),
+          });
+
+          const data = await response.json();
+
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          // Close modal
+          document.querySelector(".modal")?.remove();
+
+          showNotification("Crew member updated successfully!", "success");
+
+          // Refresh the current view
+          if (currentProject) {
+            loadProjectCrew(currentProject.id);
+          }
+        } catch (error) {
+          console.error("Error updating crew:", error);
+          showNotification("Failed to update crew member", "error");
         }
+      }
 
-        async function loadSchedule(projectId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/schedule/project/${projectId}`);
-                const data = await response.json();
-                schedule = data.schedule || [];
-                return data;
-            } catch (error) {
-                console.error('Error loading schedule:', error);
-                return { schedule: [] };
-            }
+      function renderView() {
+        const content = document.getElementById("main-content");
+
+        switch (currentView) {
+          case "dashboard":
+            renderDashboard(content);
+            break;
+          case "projects":
+            renderProjects(content);
+            break;
+          case "crew":
+            renderCrewView(content);
+            break;
+          case "schedule":
+            renderScheduleView(content);
+            break;
+          case "callsheets":
+            renderCallSheetsView(content);
+            break;
+          default:
+            renderDashboard(content);
         }
+      }
 
-        async function loadConflicts(projectId) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/schedule/project/${projectId}/conflicts`);
-                const data = await response.json();
-                conflicts = data.conflicts || [];
-                return data;
-            } catch (error) {
-                console.error('Error loading conflicts:', error);
-                return { conflicts: [] };
-            }
-        }
+      function renderDashboard(container) {
+        const totalProjects = projects.length;
+        const activeProjects = projects.filter(
+          (p) => p.status === "active",
+        ).length;
+        const totalCrew = projects.reduce(
+          (sum, p) => sum + (p.total_crew || 0),
+          0,
+        );
+        const pendingForms = projects.reduce(
+          (sum, p) => sum + (p.pending_forms || 0),
+          0,
+        );
 
-        async function createProject(projectData) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/projects`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(projectData)
-                });
-                const data = await response.json();
-                if (data.error) throw new Error(data.error);
-                showNotification('Project created successfully!', 'success');
-                loadProjects();
-                return data;
-            } catch (error) {
-                console.error('Error creating project:', error);
-                showNotification('Failed to create project', 'error');
-            }
-        }
-
-        async function deleteProject(projectId) {
-            const project = projects.find(p => p.id === projectId);
-            
-            // First confirmation
-            if (!confirm(`⚠️ Are you sure you want to delete "${project?.name}"?\n\nThis will permanently delete:\n• All crew signups\n• All schedule assignments\n• All call sheets\n\nThis action CANNOT be undone!`)) {
-                return;
-            }
-            
-            // Second confirmation - type DELETE
-            const confirmText = prompt('Type "DELETE" to confirm permanent deletion:');
-            if (confirmText !== 'DELETE') {
-                showNotification('Deletion cancelled', 'info');
-                return;
-            }
-            
-            try {
-                showNotification('Deleting project...', 'info');
-                
-                const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    showNotification(`Project "${project?.name}" deleted successfully`, 'success');
-                    if (currentProject?.id === projectId) {
-                        currentProject = null;
-                    }
-                    loadProjects();
-                } else {
-                    throw new Error(data.error || 'Failed to delete project');
-                }
-            } catch (error) {
-                console.error('Error deleting project:', error);
-                showNotification('Failed to delete project', 'error');
-            }
-        }
-
-        async function assignDepartment(projectId, department, date) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/schedule/assign-department`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        project_id: projectId,
-                        department,
-                        shoot_date: date
-                    })
-                });
-                const data = await response.json();
-                if (data.hasConflicts) {
-                    showNotification(`Assigned with ${data.conflicts} conflicts`, 'warning');
-                } else {
-                    showNotification(`Assigned ${data.assigned} crew members`, 'success');
-                }
-                loadSchedule(projectId);
-                return data;
-            } catch (error) {
-                console.error('Error assigning department:', error);
-                showNotification('Failed to assign department', 'error');
-            }
-        }
-
-        async function generateCallSheet(projectId, data) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/callsheet/generate`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ project_id: projectId, ...data })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showNotification(`Call sheet sent to ${result.crew_count} crew members`, 'success');
-                    if (result.ad_flags && result.ad_flags.length > 0) {
-                        showFlagsModal(result.ad_flags);
-                    }
-                }
-                return result;
-            } catch (error) {
-                console.error('Error generating call sheet:', error);
-                showNotification('Failed to generate call sheet', 'error');
-            }
-        }
-
-        function renderView() {
-            const content = document.getElementById('main-content');
-            
-            switch(currentView) {
-                case 'dashboard':
-                    renderDashboard(content);
-                    break;
-                case 'projects':
-                    renderProjects(content);
-                    break;
-                case 'crew':
-                    renderCrewView(content);
-                    break;
-                case 'schedule':
-                    renderScheduleView(content);
-                    break;
-                case 'callsheets':
-                    renderCallSheetsView(content);
-                    break;
-                default:
-                    renderDashboard(content);
-            }
-        }
-
-        function renderDashboard(container) {
-            const totalProjects = projects.length;
-            const activeProjects = projects.filter(p => p.status === 'active').length;
-            const totalCrew = projects.reduce((sum, p) => sum + (p.total_crew || 0), 0);
-            const pendingForms = projects.reduce((sum, p) => sum + (p.pending_forms || 0), 0);
-            
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-number">${totalProjects}</div>
@@ -866,7 +1180,10 @@
                         <i class="fas fa-project-diagram"></i> Recent Projects
                     </div>
                     <div class="project-list" id="recent-projects">
-                        ${projects.slice(0, 5).map(project => `
+                        ${projects
+                          .slice(0, 5)
+                          .map(
+                            (project) => `
                             <div class="project-item" onclick="selectProject(${project.id})">
                                 <div class="project-info">
                                     <h3>${project.name}</h3>
@@ -886,14 +1203,16 @@
                                     </div>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
                 </div>
             `;
-        }
+      }
 
-        function renderProjects(container) {
-            container.innerHTML = `
+      function renderProjects(container) {
+        container.innerHTML = `
                 <div class="card">
                     <div class="card-title">
                         <i class="fas fa-plus-circle"></i> Create New Project
@@ -928,7 +1247,9 @@
                         <i class="fas fa-list"></i> All Projects
                     </div>
                     <div class="project-list">
-                        ${projects.map(project => `
+                        ${projects
+                          .map(
+                            (project) => `
                             <div class="project-item" style="cursor: default;">
                                 <div class="project-info">
                                     <h3>${project.name}</h3>
@@ -969,35 +1290,47 @@
                                     </button>
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
                 </div>
             `;
-        }
+      }
 
-        async function renderCrewView(container) {
-            if (!currentProject) {
-                container.innerHTML = `
-                    <div class="card">
-                        <div class="card-title">Select a Project</div>
-                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
-                        <div class="project-list">
-                            ${projects.map(project => `
-                                <div class="project-item" onclick="selectProject(${project.id})">
-                                    <h3>${project.name}</h3>
-                                    <div class="project-meta">${project.project_code}</div>
-                                </div>
-                            `).join('')}
+      async function renderCrewView(container) {
+        if (!currentProject) {
+          container.innerHTML = `
+                    <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
+                        <div class="crew-header">
+                            <span class="crew-name">${member.full_name}</span>
+                            <span class="crew-department">${member.department}</span>
+                        </div>
+                        <div class="crew-details">
+                            <div><i class="fas fa-phone"></i> ${member.phone}</div>
+                            <div><i class="fas fa-envelope"></i> ${member.email}</div>
+                        </div>
+                        <div class="crew-badges">
+                            ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
+                            ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
+                            ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
+                            ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${dietaryIcon(d)} ${d}</span>`).join("")}
+                        </div>
+                        <!-- Add edit button -->
+                        <div style="margin-top: 1rem; text-align: right;">
+                            <button class="btn btn-sm btn-secondary" onclick="editCrewMember(${member.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
                         </div>
                     </div>
                 `;
-                return;
-            }
+          return;
+        }
 
-            const data = await loadProjectCrew(currentProject.id);
-            const crewByDept = data.byDepartment || {};
-            
-            container.innerHTML = `
+        const data = await loadProjectCrew(currentProject.id);
+        const crewByDept = data.byDepartment || {};
+
+        container.innerHTML = `
                 <div class="card">
                     <div class="card-title">
                         <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
@@ -1018,14 +1351,18 @@
                     </div>
                 </div>
 
-                ${Object.entries(crewByDept).map(([dept, members]) => `
+                ${Object.entries(crewByDept)
+                  .map(
+                    ([dept, members]) => `
                     <div class="card">
                         <div class="card-title" style="color: var(--secondary);">
                             ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
                         </div>
                         <div class="crew-grid">
-                            ${members.map(member => `
-                                <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, '-')}">
+                            ${members
+                              .map(
+                                (member) => `
+                                <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
                                     <div class="crew-header">
                                         <span class="crew-name">${member.full_name}</span>
                                         <span class="crew-department">${member.department}</span>
@@ -1035,51 +1372,61 @@
                                         <div><i class="fas fa-envelope"></i> ${member.email}</div>
                                     </div>
                                     <div class="crew-badges">
-                                        ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ''}
-                                        ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ''}
-                                        ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ''}
-                                        ${member.dietary_restrictions?.map(d => `<span class="badge badge-success">${dietaryIcon(d)} ${d}</span>`).join('')}
+                                        ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
+                                        ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
+                                        ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
+                                        ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${dietaryIcon(d)} ${d}</span>`).join("")}
                                     </div>
                                 </div>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </div>
                     </div>
-                `).join('')}
+                `,
+                  )
+                  .join("")}
             `;
-        }
+      }
 
-        async function renderScheduleView(container) {
-            if (!currentProject) {
-                container.innerHTML = `
+      async function renderScheduleView(container) {
+        if (!currentProject) {
+          container.innerHTML = `
                     <div class="card">
                         <div class="card-title">Select a Project</div>
                         <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to manage schedule.</p>
                         <div class="project-list">
-                            ${projects.map(project => `
+                            ${projects
+                              .map(
+                                (project) => `
                                 <div class="project-item" onclick="selectProject(${project.id})">
                                     <h3>${project.name}</h3>
                                     <div class="project-meta">${project.project_code}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </div>
                     </div>
                 `;
-                return;
-            }
+          return;
+        }
 
-            await Promise.all([
-                loadProjectCrew(currentProject.id),
-                loadSchedule(currentProject.id),
-                loadConflicts(currentProject.id)
-            ]);
+        await Promise.all([
+          loadProjectCrew(currentProject.id),
+          loadSchedule(currentProject.id),
+          loadConflicts(currentProject.id),
+        ]);
 
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="card">
                     <div class="card-title">
                         <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
                     </div>
                     
-                    ${conflicts.length > 0 ? `
+                    ${
+                      conflicts.length > 0
+                        ? `
                         <div style="background: rgba(255,69,58,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 2rem;">
                             <h3 style="color: var(--danger); margin-bottom: 0.5rem;">
                                 <i class="fas fa-exclamation-triangle"></i> ${conflicts.length} Conflicts Detected
@@ -1088,7 +1435,9 @@
                                 View Report & Solutions
                             </button>
                         </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
 
                     <div id="calendar"></div>
                 </div>
@@ -1098,41 +1447,49 @@
                         <i class="fas fa-users"></i> Crew by Department
                     </div>
                     <div class="department-grid" id="department-grid">
-                        ${getCrewByDepartment().map(([dept, members]) => `
+                        ${getCrewByDepartment()
+                          .map(
+                            ([dept, members]) => `
                             <div class="dept-btn" onclick="selectDepartment('${dept}')">
                                 <div style="font-weight: 600;">${dept}</div>
                                 <div class="count">${members.length} crew</div>
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
                 </div>
             `;
 
-            initCalendar();
-        }
+        initCalendar();
+      }
 
-        async function renderCallSheetsView(container) {
-            if (!currentProject) {
-                container.innerHTML = `
+      async function renderCallSheetsView(container) {
+        if (!currentProject) {
+          container.innerHTML = `
                     <div class="card">
                         <div class="card-title">Select a Project</div>
                         <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to generate call sheets.</p>
                         <div class="project-list">
-                            ${projects.map(project => `
+                            ${projects
+                              .map(
+                                (project) => `
                                 <div class="project-item" onclick="selectProject(${project.id})">
                                     <h3>${project.name}</h3>
                                     <div class="project-meta">${project.project_code}</div>
                                 </div>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </div>
                     </div>
                 `;
-                return;
-            }
+          return;
+        }
 
-            await loadSchedule(currentProject.id);
+        await loadSchedule(currentProject.id);
 
-            container.innerHTML = `
+        container.innerHTML = `
                 <div class="card">
                     <div class="card-title">
                         <i class="fas fa-file-pdf"></i> Generate Call Sheet
@@ -1142,11 +1499,15 @@
                         <label>Select Date</label>
                         <select id="callsheet-date">
                             <option value="">Choose a date...</option>
-                            ${schedule.map(day => `
+                            ${schedule
+                              .map(
+                                (day) => `
                                 <option value="${day.date}">
                                     ${formatDate(day.date)} (${day.total} crew)
                                 </option>
-                            `).join('')}
+                            `,
+                              )
+                              .join("")}
                         </select>
                     </div>
 
@@ -1157,7 +1518,7 @@
 
                     <div class="form-group">
                         <label>Location</label>
-                        <input type="text" id="callsheet-location" value="${currentProject.location || ''}" placeholder="Set location">
+                        <input type="text" id="callsheet-location" value="${currentProject.location || ""}" placeholder="Set location">
                     </div>
 
                     <div class="form-group">
@@ -1184,278 +1545,328 @@
                     </div>
                 </div>
             `;
+      }
+
+      function formatDate(dateString) {
+        return new Date(dateString).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+      }
+
+      function formatDateRange(start, end) {
+        return `${formatDate(start)} - ${formatDate(end)}`;
+      }
+
+      function getInviteLink(code) {
+        return `${window.location.origin}/crew-signup.html?project=${code}`;
+      }
+
+      function dietaryIcon(diet) {
+        const icons = {
+          Vegetarian: "🥗",
+          Vegan: "🌱",
+          "Gluten-Free": "🌾",
+          "Nut Allergy": "🥜",
+          "Dairy-Free": "🥛",
+          Halal: "☪️",
+          Kosher: "✡️",
+        };
+        return icons[diet] || "⚠️";
+      }
+
+      function getCrewCardClass(member) {
+        if (!member.emergency_name) return "danger";
+        if (
+          !member.dietary_restrictions ||
+          member.dietary_restrictions.length === 0
+        )
+          return "warning";
+        if (!member.has_insurance) return "warning";
+        return "";
+      }
+
+      function getCrewByDepartment() {
+        const byDept = {};
+        crew.forEach((m) => {
+          if (!byDept[m.department]) byDept[m.department] = [];
+          byDept[m.department].push(m);
+        });
+        return Object.entries(byDept);
+      }
+
+      window.selectProject = async (projectId) => {
+        currentProject = projects.find((p) => p.id === projectId);
+        await Promise.all([
+          loadProjectCrew(projectId),
+          loadSchedule(projectId),
+          loadConflicts(projectId),
+        ]);
+
+        // Switch to crew view
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document.querySelector('[data-view="crew"]').classList.add("active");
+        currentView = "crew";
+        renderView();
+      };
+
+      window.goToNewProject = () => {
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelector('[data-view="projects"]')
+          .classList.add("active");
+        currentView = "projects";
+        renderView();
+
+        setTimeout(() => {
+          document
+            .getElementById("create-project-form")
+            ?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      };
+
+      window.goToSchedule = () => {
+        if (!currentProject) {
+          showNotification("Please select a project first", "warning");
+          document
+            .querySelectorAll(".nav-btn")
+            .forEach((b) => b.classList.remove("active"));
+          document
+            .querySelector('[data-view="projects"]')
+            .classList.add("active");
+          currentView = "projects";
+          renderView();
+          return;
         }
 
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        document
+          .querySelector('[data-view="schedule"]')
+          .classList.add("active");
+        currentView = "schedule";
+        renderView();
+      };
+
+      window.handleCreateProject = async (e) => {
+        e.preventDefault();
+        const name = document.getElementById("project-name").value;
+        const start_date = document.getElementById("project-start").value;
+        const end_date = document.getElementById("project-end").value;
+        const location = document.getElementById("project-location").value;
+
+        await createProject({ name, start_date, end_date, location });
+        e.target.reset();
+      };
+
+      window.copyInviteLink = (link) => {
+        navigator.clipboard.writeText(link);
+        showNotification("Link copied to clipboard!", "success");
+      };
+
+      window.selectDepartment = (department) => {
+        const selectedDate = prompt(
+          "Enter date (YYYY-MM-DD) for department assignment:",
+        );
+        if (selectedDate && currentProject) {
+          assignDepartment(currentProject.id, department, selectedDate);
+        }
+      };
+
+      window.handleGenerateCallSheet = async () => {
+        const date = document.getElementById("callsheet-date").value;
+        const call_time = document.getElementById("callsheet-time").value;
+        const location = document.getElementById("callsheet-location").value;
+        const scenes = document.getElementById("callsheet-scenes").value;
+        const ad_notes = document.getElementById("callsheet-ad-notes").value;
+
+        if (!date) {
+          showNotification("Please select a date", "error");
+          return;
         }
 
-        function formatDateRange(start, end) {
-            return `${formatDate(start)} - ${formatDate(end)}`;
-        }
+        await generateCallSheet(currentProject.id, {
+          shoot_date: date,
+          call_time,
+          location,
+          scenes,
+          ad_notes,
+        });
+      };
 
-        function getInviteLink(code) {
-            return `${window.location.origin}/crew-signup.html?project=${code}`;
-        }
-
-        function dietaryIcon(diet) {
-            const icons = {
-                'Vegetarian': '🥗',
-                'Vegan': '🌱',
-                'Gluten-Free': '🌾',
-                'Nut Allergy': '🥜',
-                'Dairy-Free': '🥛',
-                'Halal': '☪️',
-                'Kosher': '✡️'
-            };
-            return icons[diet] || '⚠️';
-        }
-
-        function getCrewCardClass(member) {
-            if (!member.emergency_name) return 'danger';
-            if (!member.dietary_restrictions || member.dietary_restrictions.length === 0) return 'warning';
-            if (!member.has_insurance) return 'warning';
-            return '';
-        }
-
-        function getCrewByDepartment() {
-            const byDept = {};
-            crew.forEach(m => {
-                if (!byDept[m.department]) byDept[m.department] = [];
-                byDept[m.department].push(m);
-            });
-            return Object.entries(byDept);
-        }
-
-        window.selectProject = async (projectId) => {
-            currentProject = projects.find(p => p.id === projectId);
-            await Promise.all([
-                loadProjectCrew(projectId),
-                loadSchedule(projectId),
-                loadConflicts(projectId)
-            ]);
-            
-            // Switch to crew view
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-view="crew"]').classList.add('active');
-            currentView = 'crew';
-            renderView();
-        };
-
-        window.goToNewProject = () => {
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-view="projects"]').classList.add('active');
-            currentView = 'projects';
-            renderView();
-            
-            setTimeout(() => {
-                document.getElementById('create-project-form')?.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-        };
-
-        window.goToSchedule = () => {
-            if (!currentProject) {
-                showNotification('Please select a project first', 'warning');
-                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-                document.querySelector('[data-view="projects"]').classList.add('active');
-                currentView = 'projects';
-                renderView();
-                return;
-            }
-            
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('[data-view="schedule"]').classList.add('active');
-            currentView = 'schedule';
-            renderView();
-        };
-
-        window.handleCreateProject = async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('project-name').value;
-            const start_date = document.getElementById('project-start').value;
-            const end_date = document.getElementById('project-end').value;
-            const location = document.getElementById('project-location').value;
-            
-            await createProject({ name, start_date, end_date, location });
-            e.target.reset();
-        };
-
-        window.copyInviteLink = (link) => {
-            navigator.clipboard.writeText(link);
-            showNotification('Link copied to clipboard!', 'success');
-        };
-
-        window.selectDepartment = (department) => {
-            const selectedDate = prompt('Enter date (YYYY-MM-DD) for department assignment:');
-            if (selectedDate && currentProject) {
-                assignDepartment(currentProject.id, department, selectedDate);
-            }
-        };
-
-        window.handleGenerateCallSheet = async () => {
-            const date = document.getElementById('callsheet-date').value;
-            const call_time = document.getElementById('callsheet-time').value;
-            const location = document.getElementById('callsheet-location').value;
-            const scenes = document.getElementById('callsheet-scenes').value;
-            const ad_notes = document.getElementById('callsheet-ad-notes').value;
-
-            if (!date) {
-                showNotification('Please select a date', 'error');
-                return;
-            }
-
-            await generateCallSheet(currentProject.id, {
-                shoot_date: date,
-                call_time,
-                location,
-                scenes,
-                ad_notes
-            });
-        };
-
-        window.showConflictReport = () => {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
+      window.showConflictReport = () => {
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 style="color: var(--danger);">⚠️ Conflict Report</h2>
                         <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
                     </div>
                     <div style="max-height: 60vh; overflow-y: auto;">
-                        ${conflicts.map(conflict => `
+                        ${conflicts
+                          .map(
+                            (conflict) => `
                             <div class="conflict-item">
                                 <strong>${conflict.crew_name}</strong> - ${formatDate(conflict.shoot_date)}
                                 <div style="margin-top: 0.5rem; font-size: 0.9rem;">
-                                    ${conflict.is_double_booked ? '• Double booked on another project<br>' : ''}
-                                    ${conflict.is_personal_unavailable ? '• Marked as unavailable<br>' : ''}
-                                    ${conflict.missing_emergency ? '• Missing emergency contact<br>' : ''}
-                                    ${conflict.missing_dietary ? '• Missing dietary info<br>' : ''}
-                                    ${conflict.insurance_issue ? '• Insurance issue<br>' : ''}
+                                    ${conflict.is_double_booked ? "• Double booked on another project<br>" : ""}
+                                    ${conflict.is_personal_unavailable ? "• Marked as unavailable<br>" : ""}
+                                    ${conflict.missing_emergency ? "• Missing emergency contact<br>" : ""}
+                                    ${conflict.missing_dietary ? "• Missing dietary info<br>" : ""}
+                                    ${conflict.insurance_issue ? "• Insurance issue<br>" : ""}
                                 </div>
                                 <div class="conflict-suggestion">
                                     <i class="fas fa-lightbulb"></i> 
                                     ${getConflictSuggestion(conflict)}
                                 </div>
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
                 </div>
             `;
-            document.body.appendChild(modal);
-        };
+        document.body.appendChild(modal);
+      };
 
-        function getConflictSuggestion(conflict) {
-            if (conflict.is_double_booked) {
-                return 'Check available alternates in same department';
-            }
-            if (conflict.missing_emergency) {
-                return 'Send reminder to update emergency contact';
-            }
-            if (conflict.missing_dietary) {
-                return 'Send reminder to add dietary restrictions';
-            }
-            if (conflict.insurance_issue) {
-                return 'Verify insurance before shoot day';
-            }
-            return 'Contact crew member to resolve';
+      function getConflictSuggestion(conflict) {
+        if (conflict.is_double_booked) {
+          return "Check available alternates in same department";
         }
+        if (conflict.missing_emergency) {
+          return "Send reminder to update emergency contact";
+        }
+        if (conflict.missing_dietary) {
+          return "Send reminder to add dietary restrictions";
+        }
+        if (conflict.insurance_issue) {
+          return "Verify insurance before shoot day";
+        }
+        return "Contact crew member to resolve";
+      }
 
-        function showFlagsModal(flags) {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
+      function showFlagsModal(flags) {
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
                 <div class="modal-content">
                     <div class="modal-header">
                         <h2 style="color: var(--warning);">⚠️ AD Flags</h2>
                         <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
                     </div>
                     <div style="max-height: 60vh; overflow-y: auto;">
-                        ${flags.map(flag => `
+                        ${flags
+                          .map(
+                            (flag) => `
                             <div style="padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                                 ${flag}
                             </div>
-                        `).join('')}
+                        `,
+                          )
+                          .join("")}
                     </div>
                 </div>
             `;
-            document.body.appendChild(modal);
-        }
+        document.body.appendChild(modal);
+      }
 
-        function showNotification(message, type = 'info') {
-            // Simple alert for now
-            alert(message);
-        }
+      function showNotification(message, type = "info") {
+        // Simple alert for now
+        alert(message);
+      }
 
-        function initCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (!calendarEl) return;
+      function initCalendar() {
+        const calendarEl = document.getElementById("calendar");
+        if (!calendarEl) return;
 
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,dayGridWeek'
-                },
-                events: schedule.map(day => ({
-                    title: `${day.total} crew`,
-                    start: day.date,
-                    backgroundColor: day.total > 0 ? 'var(--success)' : 'var(--text-muted)',
-                    borderColor: 'transparent',
-                    extendedProps: { crew: day.crew }
-                })),
-                dateClick: function(info) {
-                    const crewCount = schedule.find(d => d.date === info.dateStr)?.total || 0;
-                    if (crewCount > 0) {
-                        alert(`Crew assigned: ${crewCount} members`);
-                    } else {
-                        if (confirm('No crew assigned. Assign department to this date?')) {
-                            const dept = prompt('Enter department name:');
-                            if (dept && currentProject) {
-                                assignDepartment(currentProject.id, dept, info.dateStr);
-                            }
-                        }
-                    }
-                },
-                eventDidMount: function(info) {
-                    if (info.event.extendedProps.crew) {
-                        const hasConflicts = info.event.extendedProps.crew.some(c => c.conflict);
-                        if (hasConflicts) {
-                            info.el.style.backgroundColor = 'var(--warning)';
-                        }
-                    }
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: "dayGridMonth",
+          headerToolbar: {
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,dayGridWeek",
+          },
+          events: schedule.map((day) => ({
+            title: `${day.total} crew`,
+            start: day.date,
+            backgroundColor:
+              day.total > 0 ? "var(--success)" : "var(--text-muted)",
+            borderColor: "transparent",
+            extendedProps: { crew: day.crew },
+          })),
+          dateClick: function (info) {
+            const crewCount =
+              schedule.find((d) => d.date === info.dateStr)?.total || 0;
+            if (crewCount > 0) {
+              alert(`Crew assigned: ${crewCount} members`);
+            } else {
+              if (
+                confirm("No crew assigned. Assign department to this date?")
+              ) {
+                const dept = prompt("Enter department name:");
+                if (dept && currentProject) {
+                  assignDepartment(currentProject.id, dept, info.dateStr);
                 }
-            });
-            
-            calendar.render();
-        }
-
-        window.editProjectDates = async (projectId) => {
-            const project = projects.find(p => p.id === projectId);
-            const newStart = prompt('Enter new start date (YYYY-MM-DD):', project.start_date);
-            const newEnd = prompt('Enter new end date (YYYY-MM-DD):', project.end_date);
-            
-            if (newStart && newEnd) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ start_date: newStart, end_date: newEnd })
-                    });
-                    const data = await response.json();
-                    if (data.project) {
-                        showNotification('Project dates updated!', 'success');
-                        loadProjects();
-                    }
-                } catch (error) {
-                    console.error('Error updating project:', error);
-                    showNotification('Failed to update project', 'error');
-                }
+              }
             }
-        };
+          },
+          eventDidMount: function (info) {
+            if (info.event.extendedProps.crew) {
+              const hasConflicts = info.event.extendedProps.crew.some(
+                (c) => c.conflict,
+              );
+              if (hasConflicts) {
+                info.el.style.backgroundColor = "var(--warning)";
+              }
+            }
+          },
+        });
+
+        calendar.render();
+      }
+
+      window.editProjectDates = async (projectId) => {
+        const project = projects.find((p) => p.id === projectId);
+        const newStart = prompt(
+          "Enter new start date (YYYY-MM-DD):",
+          project.start_date,
+        );
+        const newEnd = prompt(
+          "Enter new end date (YYYY-MM-DD):",
+          project.end_date,
+        );
+
+        if (newStart && newEnd) {
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/projects/${projectId}`,
+              {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  start_date: newStart,
+                  end_date: newEnd,
+                }),
+              },
+            );
+            const data = await response.json();
+            if (data.project) {
+              showNotification("Project dates updated!", "success");
+              loadProjects();
+            }
+          } catch (error) {
+            console.error("Error updating project:", error);
+            showNotification("Failed to update project", "error");
+          }
+        }
+      };
     </script>
-</body>
+  </body>
 </html>
