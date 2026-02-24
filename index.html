@@ -165,8 +165,13 @@
         background: var(--dark);
         border-radius: 12px;
         padding: 1.5rem;
-        border: 2px solid var(--primary); /* Changed from border-left to full border */
+        border: 2px solid var(--primary);
         transition: all 0.2s;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(255, 45, 85, 0.3);
       }
 
       .stat-number {
@@ -318,9 +323,8 @@
 
       .project-stat {
         text-align: center;
-        padding: 1rem;
-        border-radius: 8px;
-        border: 2px solid var(--primary);
+        padding: 0 1rem;
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
       }
 
       .project-stat .number {
@@ -592,7 +596,6 @@
         border-radius: 0 8px 8px 0;
       }
 
-      /* Checkbox styles for edit modal */
       .checkbox-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -666,43 +669,6 @@
         .checkbox-grid {
           grid-template-columns: 1fr;
         }
-
-        /* Activity Feed Styles */
-        .activity-feed {
-          scrollbar-width: thin;
-          scrollbar-color: var(--primary) var(--dark);
-        }
-
-        .activity-feed::-webkit-scrollbar {
-          width: 8px;
-        }
-
-        .activity-feed::-webkit-scrollbar-track {
-          background: var(--dark);
-          border-radius: 4px;
-        }
-
-        .activity-feed::-webkit-scrollbar-thumb {
-          background: var(--primary);
-          border-radius: 4px;
-        }
-
-        .activity-feed::-webkit-scrollbar-thumb:hover {
-          background: var(--primary-dark);
-        }
-
-        .activity-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-        }
-
-        .activity-item:hover i.fa-chevron-right {
-          color: var(--primary) !important;
-          transform: translateX(4px);
-        }
-
-        .activity-item i.fa-chevron-right {
-          transition: all 0.2s;
-        }
       }
     </style>
   </head>
@@ -714,13 +680,10 @@
       </div>
 
       <div class="nav" id="navigation">
-        <button class="nav-btn active" data-view="dashboard">
-          <i class="fas fa-chart-pie"></i> Dashboard
-        </button>
         <button class="nav-btn" data-view="projects">
           <i class="fas fa-folder"></i> Projects
         </button>
-        <button class="nav-btn" data-view="crew">
+        <button class="nav-btn active" data-view="crew">
           <i class="fas fa-users"></i> Crew
         </button>
         <button class="nav-btn" data-view="schedule">
@@ -774,7 +737,7 @@
       ];
 
       // State
-      let currentView = "dashboard";
+      let currentView = "crew";
       let projects = [];
       let currentProject = null;
       let crew = [];
@@ -976,6 +939,54 @@
         } catch (error) {
           console.error("Error deleting project:", error);
           showNotification("Failed to delete project", "error");
+        }
+      }
+
+      async function deleteCrewMember(crewId, projectId) {
+        const crewMember = crew.find((c) => c.id === crewId);
+
+        if (
+          !confirm(
+            `⚠️ Are you sure you want to delete "${crewMember?.full_name}"?\n\nThis will permanently remove them from this project and all schedules.\n\nThis action CANNOT be undone!`,
+          )
+        ) {
+          return;
+        }
+
+        const confirmText = prompt(
+          `Type "DELETE" to confirm permanent deletion of ${crewMember?.full_name}:`,
+        );
+        if (confirmText !== "DELETE") {
+          showNotification("Deletion cancelled", "info");
+          return;
+        }
+
+        try {
+          showNotification(`Deleting ${crewMember?.full_name}...`, "info");
+
+          const response = await fetch(`${API_BASE_URL}/crew/${crewId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showNotification(
+              `${crewMember?.full_name} deleted successfully`,
+              "success",
+            );
+            // Refresh crew list
+            if (currentProject) {
+              await loadProjectCrew(currentProject.id);
+              renderView();
+            }
+          } else {
+            throw new Error(data.error || "Failed to delete crew member");
+          }
+        } catch (error) {
+          console.error("Error deleting crew member:", error);
+          showNotification("Failed to delete crew member", "error");
         }
       }
 
@@ -1246,14 +1257,151 @@
         }
       }
 
+      // View crew member details (read-only)
+      function viewCrewMember(crewId) {
+        const crewMember = crew.find((c) => c.id === crewId);
+
+        if (!crewMember) {
+          showNotification("Crew member not found", "error");
+          return;
+        }
+
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
+          <div class="modal-content" style="max-width: 500px;">
+              <div class="modal-header">
+                  <h2 style="color: var(--secondary);">
+                      <i class="fas fa-user-circle"></i> Crew Details
+                  </h2>
+                  <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+              </div>
+              <div style="padding: 1rem;">
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                      <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: white;">
+                          ${crewMember.full_name?.charAt(0) || "?"}
+                      </div>
+                      <div>
+                          <h3 style="font-size: 1.4rem; margin-bottom: 0.25rem;">${crewMember.full_name}</h3>
+                          <span style="background: var(--medium); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--secondary);">${crewMember.department}</span>
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 1.5rem;">
+                      <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                          <i class="fas fa-address-card"></i> Contact Information
+                      </h4>
+                      <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                          <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                              <span style="color: var(--text-muted);">Phone:</span>
+                              <span><i class="fas fa-phone"></i> ${crewMember.phone || "Not provided"}</span>
+                          </div>
+                          <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                              <span style="color: var(--text-muted);">Email:</span>
+                              <span><i class="fas fa-envelope"></i> ${crewMember.email}</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 1.5rem;">
+                      <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                          <i class="fas fa-ambulance"></i> Emergency Contact
+                      </h4>
+                      <div style="background: var(--dark); border-radius: 12px; padding: 1rem; ${!crewMember.emergency_name ? "border-left: 4px solid var(--danger);" : ""}">
+                          ${
+                            crewMember.emergency_name
+                              ? `
+                              <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                  <span style="color: var(--text-muted);">Name:</span>
+                                  <span>${crewMember.emergency_name}</span>
+                              </div>
+                              <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                                  <span style="color: var(--text-muted);">Phone:</span>
+                                  <span><i class="fas fa-phone"></i> ${crewMember.emergency_phone || "Not provided"}</span>
+                              </div>
+                          `
+                              : '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> No emergency contact provided</span>'
+                          }
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 1.5rem;">
+                      <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                          <i class="fas fa-utensils"></i> Dietary Restrictions
+                      </h4>
+                      <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                          ${
+                            crewMember.dietary_restrictions &&
+                            crewMember.dietary_restrictions.length > 0
+                              ? crewMember.dietary_restrictions
+                                  .map(
+                                    (d) => `
+                                  <span style="display: inline-block; background: rgba(48,209,88,0.2); color: var(--success); padding: 0.25rem 1rem; border-radius: 20px; margin: 0.25rem; border: 1px solid var(--success);">
+                                      ${getDietaryIcon(d)} ${d}
+                                  </span>
+                              `,
+                                  )
+                                  .join("")
+                              : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No dietary restrictions specified</span>'
+                          }
+                      </div>
+                  </div>
+
+                  <div style="margin-bottom: 1.5rem;">
+                      <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                          <i class="fas fa-shield-alt"></i> Insurance & Union
+                      </h4>
+                      <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                          <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                              <span style="color: var(--text-muted);">Insurance:</span>
+                              <span>${crewMember.has_insurance ? '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No</span>'}</span>
+                          </div>
+                          <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                              <span style="color: var(--text-muted);">Union:</span>
+                              <span>${crewMember.union_status || "Not specified"}</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  ${
+                    crewMember.address
+                      ? `
+                      <div style="margin-bottom: 1.5rem;">
+                          <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                              <i class="fas fa-map-marker-alt"></i> Address
+                          </h4>
+                          <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                              ${crewMember.address}
+                          </div>
+                      </div>
+                  `
+                      : ""
+                  }
+
+                  <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                      <i class="far fa-calendar-alt"></i> Signed up on ${crewMember.signup_date ? formatDate(crewMember.signup_date) : "Unknown date"}
+                  </div>
+
+                  <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                      <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
+                          <i class="fas fa-times"></i> Close
+                      </button>
+                      <button class="btn btn-primary" style="flex: 1;" onclick="editCrewMember(${crewMember.id}); this.closest('.modal').remove()">
+                          <i class="fas fa-edit"></i> Edit
+                      </button>
+                  </div>
+              </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+      }
+
       // Render Functions
       function renderView() {
         const content = document.getElementById("main-content");
 
         switch (currentView) {
-          case "dashboard":
-            renderDashboard(content);
-            break;
           case "projects":
             renderProjects(content);
             break;
@@ -1267,269 +1415,113 @@
             renderCallSheetsView(content);
             break;
           default:
-            renderDashboard(content);
+            renderCrewView(content);
         }
-      }
-
-      async function renderDashboard(container) {
-        // Calculate stats
-        const totalProjects = projects.length;
-        const activeProjects = projects.filter(
-          (p) => p.status === "active",
-        ).length;
-        const completedProjects = projects.filter(
-          (p) => p.status === "completed",
-        ).length;
-
-        // Calculate upcoming shoots (projects starting in next 7 days)
-        const today = new Date();
-        const nextWeek = new Date(today);
-        nextWeek.setDate(today.getDate() + 7);
-
-        const upcomingShoots = projects.filter((p) => {
-          const startDate = new Date(p.start_date);
-          return (
-            p.status === "active" && startDate >= today && startDate <= nextWeek
-          );
-        }).length;
-
-        // Fetch recent activities
-        let activities = [];
-        try {
-          const response = await fetch(`${API_BASE_URL}/activities?limit=15`);
-          const data = await response.json();
-          activities = data.activities || [];
-        } catch (error) {
-          console.error("Error loading activities:", error);
-        }
-
-        // Helper function to get activity icon and color
-        function getActivityIcon(type) {
-          const icons = {
-            project_created: { icon: "fa-folder-plus", color: "var(--info)" },
-            crew_joined: { icon: "fa-user-plus", color: "var(--success)" },
-            crew_updated: { icon: "fa-user-edit", color: "var(--warning)" },
-            callsheet_sent: { icon: "fa-file-pdf", color: "var(--danger)" },
-            project_completed: {
-              icon: "fa-check-circle",
-              color: "var(--success)",
-            },
-            schedule_assigned: {
-              icon: "fa-calendar-check",
-              color: "var(--secondary)",
-            },
-          };
-          return icons[type] || { icon: "fa-bell", color: "var(--text-muted)" };
-        }
-
-        // Helper function to format activity message
-        function formatActivityMessage(activity) {
-          const timeAgo = getTimeAgo(new Date(activity.timestamp));
-
-          switch (activity.type) {
-            case "project_created":
-              return `📁 New project "${activity.project_name}" was created`;
-            case "crew_joined":
-              return `👤 ${activity.crew_name} joined "${activity.project_name}"`;
-            case "crew_updated":
-              return `✏️ ${activity.crew_name}'s information was updated`;
-            case "callsheet_sent":
-              return `📧 Call sheet sent for "${activity.project_name}"`;
-            case "project_completed":
-              return `✅ Project "${activity.project_name}" was completed`;
-            case "schedule_assigned":
-              return `📅 ${activity.crew_name} was scheduled for "${activity.project_name}"`;
-            default:
-              return `Activity in "${activity.project_name}"`;
-          }
-        }
-
-        container.innerHTML = `
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-number">${totalProjects}</div>
-            <div class="stat-label">Total Projects</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">${activeProjects}</div>
-            <div class="stat-label">Active Projects</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">${completedProjects}</div>
-            <div class="stat-label">Completed</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">${upcomingShoots}</div>
-            <div class="stat-label">Upcoming Shoots</div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">
-            <i class="fas fa-history"></i> Recent Activity
-        </div>
-        <div class="activity-feed" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
-            ${
-              activities.length > 0
-                ? activities
-                    .map((activity) => {
-                      const { icon, color } = getActivityIcon(activity.type);
-                      return `
-                <div class="activity-item" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); transition: all 0.2s; cursor: pointer;" onclick="jumpToActivity('${activity.type}', ${activity.project_id}, ${activity.crew_id || "null"})">
-                    <div style="width: 40px; height: 40px; background: ${color}; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
-                        <i class="fas ${icon}"></i>
-                    </div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; margin-bottom: 0.25rem;">${formatActivityMessage(activity)}</div>
-                        <div style="color: var(--text-muted); font-size: 0.85rem;">
-                            <i class="far fa-clock"></i> ${getTimeAgo(new Date(activity.timestamp))}
-                        </div>
-                    </div>
-                    <i class="fas fa-chevron-right" style="color: var(--text-muted);"></i>
-                </div>
-              `;
-                    })
-                    .join("")
-                : `
-              <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                  <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                  <p>No recent activity</p>
-              </div>
-            `
-            }
-        </div>
-    </div>
-  `;
-      }
-
-      // Helper function to show "time ago"
-      function getTimeAgo(date) {
-        const seconds = Math.floor((new Date() - date) / 1000);
-
-        const intervals = {
-          year: 31536000,
-          month: 2592000,
-          week: 604800,
-          day: 86400,
-          hour: 3600,
-          minute: 60,
-          second: 1,
-        };
-
-        for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-          const interval = Math.floor(seconds / secondsInUnit);
-          if (interval >= 1) {
-            return interval === 1
-              ? `${interval} ${unit} ago`
-              : `${interval} ${unit}s ago`;
-          }
-        }
-        return "just now";
       }
 
       function renderProjects(container) {
         container.innerHTML = `
-    <div class="card">
-        <div class="card-title">
-            <i class="fas fa-plus-circle"></i> Create New Project
-        </div>
-        <form id="create-project-form" onsubmit="handleCreateProject(event)">
-            <div class="form-group">
-                <label>Project Name</label>
-                <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Start Date</label>
-                    <input type="date" id="project-start" required>
-                </div>
-                <div class="form-group">
-                    <label>End Date</label>
-                    <input type="date" id="project-end" required>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Location (for weather)</label>
-                <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
-            </div>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-magic"></i> Create Project & Generate Link
-            </button>
-        </form>
-    </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-plus-circle"></i> Create New Project
+              </div>
+              <form id="create-project-form" onsubmit="handleCreateProject(event)">
+                  <div class="form-group">
+                      <label>Project Name</label>
+                      <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
+                  </div>
+                  <div class="form-row">
+                      <div class="form-group">
+                          <label>Start Date</label>
+                          <input type="date" id="project-start" required>
+                      </div>
+                      <div class="form-group">
+                          <label>End Date</label>
+                          <input type="date" id="project-end" required>
+                      </div>
+                  </div>
+                  <div class="form-group">
+                      <label>Location (for weather)</label>
+                      <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                      <i class="fas fa-magic"></i> Create Project & Generate Link
+                  </button>
+              </form>
+          </div>
 
-    <div class="card">
-        <div class="card-title">
-            <i class="fas fa-list"></i> All Projects
-        </div>
-        <div class="project-list">
-            ${projects
-              .map(
-                (project) => `
-                <div class="project-item" style="cursor: default; ${project.status === "completed" ? "opacity: 0.8;" : ""}">
-                    <div class="project-info">
-                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓ Completed</span>' : ""}</h3>
-                        <div class="project-meta">
-                            <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                            <span><i class="fas fa-code"></i> ${project.project_code}</span>
-                        </div>
-                        <div class="invite-box">
-                            <input type="text" value="${getInviteLink(project.project_code)}" readonly>
-                            <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="project-stats">
-                        <div class="project-stat">
-                            <div class="number">${project.total_crew || 0}</div>
-                            <div class="label">Crew(s)</div>
-                        </div>
-                    </div>
-                    <div class="action-buttons">
-                        <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
-                            <i class="fas fa-eye"></i> View
-                        </button>
-                        <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
-                            <i class="fas fa-edit"></i> Dates
-                        </button>
-                        <button class="btn btn-sm ${project.status === "active" ? "btn-success" : "btn-secondary"}" onclick="toggleProjectStatus(${project.id})">
-                            <i class="fas ${project.status === "active" ? "fa-check-circle" : "fa-undo"}"></i> 
-                            ${project.status === "active" ? "Complete" : "Reopen"}
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-              `,
-              )
-              .join("")}
-        </div>
-    </div>
-  `;
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-list"></i> All Projects
+              </div>
+              <div class="project-list">
+                  ${projects
+                    .map(
+                      (project) => `
+                      <div class="project-item" style="cursor: default; ${project.status === "completed" ? "opacity: 0.8;" : ""}">
+                          <div class="project-info">
+                              <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓ Completed</span>' : ""}</h3>
+                              <div class="project-meta">
+                                  <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
+                                  <span><i class="fas fa-code"></i> ${project.project_code}</span>
+                              </div>
+                              <div class="invite-box">
+                                  <input type="text" value="${getInviteLink(project.project_code)}" readonly>
+                                  <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
+                                      <i class="fas fa-copy"></i>
+                                  </button>
+                              </div>
+                          </div>
+                          <div class="project-stats">
+                              <div class="project-stat">
+                                  <div class="number">${project.total_crew || 0}</div>
+                                  <div class="label">Crew</div>
+                              </div>
+                          </div>
+                          <div class="action-buttons">
+                              <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
+                                  <i class="fas fa-eye"></i> View
+                              </button>
+                              <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
+                                  <i class="fas fa-edit"></i> Dates
+                              </button>
+                              <button class="btn btn-sm ${project.status === "active" ? "btn-success" : "btn-secondary"}" onclick="toggleProjectStatus(${project.id})">
+                                  <i class="fas ${project.status === "active" ? "fa-check-circle" : "fa-undo"}"></i> 
+                                  ${project.status === "active" ? "Complete" : "Reopen"}
+                              </button>
+                              <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
+                                  <i class="fas fa-trash"></i> Delete
+                              </button>
+                          </div>
+                      </div>
+                    `,
+                    )
+                    .join("")}
+              </div>
+          </div>
+        `;
       }
 
       async function renderCrewView(container) {
         if (!currentProject) {
           container.innerHTML = `
-      <div class="card">
-          <div class="card-title">Select a Project</div>
-          <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
-          <div class="project-list">
-              ${projects
-                .map(
-                  (project) => `
-                  <div class="project-item" onclick="selectProject(${project.id})">
-                      <h3>${project.name}</h3>
-                      <div class="project-meta">${project.project_code}</div>
-                  </div>
-                `,
-                )
-                .join("")}
-          </div>
-      </div>
-    `;
+            <div class="card">
+                <div class="card-title">Select a Project</div>
+                <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
+                <div class="project-list">
+                    ${projects
+                      .map(
+                        (project) => `
+                        <div class="project-item" onclick="selectProject(${project.id})">
+                            <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
+                            <div class="project-meta">${project.project_code}</div>
+                        </div>
+                      `,
+                      )
+                      .join("")}
+                </div>
+            </div>
+          `;
           return;
         }
 
@@ -1537,218 +1529,73 @@
         const crewByDept = data.byDepartment || {};
 
         container.innerHTML = `
-    <div class="card">
-        <div class="card-title">
-            <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
-        </div>
-        <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
-            <div>
-                <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
-                <div style="color: var(--text-muted);">Total Crew</div>
-            </div>
-            <div>
-                <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
-                <div style="color: var(--text-muted);">Completed</div>
-            </div>
-            <div>
-                <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
-                <div style="color: var(--text-muted);">Pending</div>
-            </div>
-        </div>
-    </div>
+          <div class="card">
+              <div class="card-title">
+                  <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
+              </div>
+              <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
+                      <div style="color: var(--text-muted);">Total Crew</div>
+                  </div>
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
+                      <div style="color: var(--text-muted);">Completed</div>
+                  </div>
+                  <div>
+                      <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
+                      <div style="color: var(--text-muted);">Pending</div>
+                  </div>
+              </div>
+          </div>
 
-    ${Object.entries(crewByDept)
-      .map(
-        ([dept, members]) => `
-        <div class="card">
-            <div class="card-title" style="color: var(--secondary);">
-                ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
-            </div>
-            <div class="crew-grid">
-                ${members
-                  .map(
-                    (member) => `
-                    <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
-                        <div class="crew-header">
-                            <span class="crew-name">${member.full_name}</span>
-                            <span class="crew-department">${member.department}</span>
-                        </div>
-                        <div class="crew-details">
-                            <div><i class="fas fa-phone"></i> ${member.phone}</div>
-                            <div><i class="fas fa-envelope"></i> ${member.email}</div>
-                        </div>
-                        <div class="crew-badges">
-                            ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
-                            ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
-                            ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
-                            ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${getDietaryIcon(d)} ${d}</span>`).join("")}
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end;">
-                            <button class="btn btn-sm btn-secondary" onclick="viewCrewMember(${member.id})">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="btn btn-sm btn-primary" onclick="editCrewMember(${member.id})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                        </div>
-                    </div>
-                  `,
-                  )
-                  .join("")}
-            </div>
-        </div>
-      `,
-      )
-      .join("")}
-  `;
-      }
-
-      // View crew member details (read-only)
-      function viewCrewMember(crewId) {
-        // Find the crew member from the global crew array
-        const crewMember = crew.find((c) => c.id === crewId);
-
-        if (!crewMember) {
-          showNotification("Crew member not found", "error");
-          return;
-        }
-
-        const modal = document.createElement("div");
-        modal.className = "modal";
-        modal.innerHTML = `
-    <div class="modal-content" style="max-width: 500px;">
-        <div class="modal-header">
-            <h2 style="color: var(--secondary);">
-                <i class="fas fa-user-circle"></i> Crew Details
-            </h2>
-            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-        </div>
-        <div style="padding: 1rem;">
-            <!-- Profile Header -->
-            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: white;">
-                    ${crewMember.full_name?.charAt(0) || "?"}
-                </div>
-                <div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 0.25rem;">${crewMember.full_name}</h3>
-                    <span style="background: var(--medium); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--secondary);">${crewMember.department}</span>
-                </div>
-            </div>
-
-            <!-- Contact Information -->
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
-                    <i class="fas fa-address-card"></i> Contact Information
-                </h4>
-                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
-                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="color: var(--text-muted);">Phone:</span>
-                        <span><i class="fas fa-phone"></i> ${crewMember.phone || "Not provided"}</span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
-                        <span style="color: var(--text-muted);">Email:</span>
-                        <span><i class="fas fa-envelope"></i> ${crewMember.email}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Emergency Contact -->
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
-                    <i class="fas fa-ambulance"></i> Emergency Contact
-                </h4>
-                <div style="background: var(--dark); border-radius: 12px; padding: 1rem; ${!crewMember.emergency_name ? "border-left: 4px solid var(--danger);" : ""}">
-                    ${
-                      crewMember.emergency_name
-                        ? `
-                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <span style="color: var(--text-muted);">Name:</span>
-                            <span>${crewMember.emergency_name}</span>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
-                            <span style="color: var(--text-muted);">Phone:</span>
-                            <span><i class="fas fa-phone"></i> ${crewMember.emergency_phone || "Not provided"}</span>
-                        </div>
-                    `
-                        : '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> No emergency contact provided</span>'
-                    }
-                </div>
-            </div>
-
-            <!-- Dietary Restrictions -->
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
-                    <i class="fas fa-utensils"></i> Dietary Restrictions
-                </h4>
-                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
-                    ${
-                      crewMember.dietary_restrictions &&
-                      crewMember.dietary_restrictions.length > 0
-                        ? crewMember.dietary_restrictions
-                            .map(
-                              (d) => `
-                            <span style="display: inline-block; background: rgba(48,209,88,0.2); color: var(--success); padding: 0.25rem 1rem; border-radius: 20px; margin: 0.25rem; border: 1px solid var(--success);">
-                                ${getDietaryIcon(d)} ${d}
-                            </span>
+          ${Object.entries(crewByDept)
+            .map(
+              ([dept, members]) => `
+              <div class="card">
+                  <div class="card-title" style="color: var(--secondary);">
+                      ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
+                  </div>
+                  <div class="crew-grid">
+                      ${members
+                        .map(
+                          (member) => `
+                          <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
+                              <div class="crew-header">
+                                  <span class="crew-name">${member.full_name}</span>
+                                  <span class="crew-department">${member.department}</span>
+                              </div>
+                              <div class="crew-details">
+                                  <div><i class="fas fa-phone"></i> ${member.phone}</div>
+                                  <div><i class="fas fa-envelope"></i> ${member.email}</div>
+                              </div>
+                              <div class="crew-badges">
+                                  ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
+                                  ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
+                                  ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
+                                  ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${getDietaryIcon(d)} ${d}</span>`).join("")}
+                              </div>
+                              <div style="display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end;">
+                                  <button class="btn btn-sm btn-secondary" onclick="viewCrewMember(${member.id})">
+                                      <i class="fas fa-eye"></i> View
+                                  </button>
+                                  <button class="btn btn-sm btn-primary" onclick="editCrewMember(${member.id})">
+                                      <i class="fas fa-edit"></i> Edit
+                                  </button>
+                                  <button class="btn btn-sm btn-danger" onclick="deleteCrewMember(${member.id}, ${currentProject.id})">
+                                      <i class="fas fa-trash"></i> Delete
+                                  </button>
+                              </div>
+                          </div>
                         `,
-                            )
-                            .join("")
-                        : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No dietary restrictions specified</span>'
-                    }
-                </div>
-            </div>
-
-            <!-- Insurance & Union -->
-            <div style="margin-bottom: 1.5rem;">
-                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
-                    <i class="fas fa-shield-alt"></i> Insurance & Union
-                </h4>
-                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
-                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="color: var(--text-muted);">Insurance:</span>
-                        <span>${crewMember.has_insurance ? '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No</span>'}</span>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
-                        <span style="color: var(--text-muted);">Union:</span>
-                        <span>${crewMember.union_status || "Not specified"}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Address -->
-            ${
-              crewMember.address
-                ? `
-                <div style="margin-bottom: 1.5rem;">
-                    <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
-                        <i class="fas fa-map-marker-alt"></i> Address
-                    </h4>
-                    <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
-                        ${crewMember.address}
-                    </div>
-                </div>
-            `
-                : ""
-            }
-
-            <!-- Signup Date -->
-            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                <i class="far fa-calendar-alt"></i> Signed up on ${crewMember.signup_date ? formatDate(crewMember.signup_date) : "Unknown date"}
-            </div>
-
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
-                    <i class="fas fa-times"></i> Close
-                </button>
-                <button class="btn btn-primary" style="flex: 1;" onclick="editCrewMember(${crewMember.id}); this.closest('.modal').remove()">
-                    <i class="fas fa-edit"></i> Edit
-                </button>
-            </div>
-        </div>
-    </div>
-  `;
-
-        document.body.appendChild(modal);
+                        )
+                        .join("")}
+                  </div>
+              </div>
+            `,
+            )
+            .join("")}
+        `;
       }
 
       async function renderScheduleView(container) {
@@ -1762,7 +1609,7 @@
                       .map(
                         (project) => `
                         <div class="project-item" onclick="selectProject(${project.id})">
-                            <h3>${project.name}</h3>
+                            <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
                             <div class="project-meta">${project.project_code}</div>
                         </div>
                       `,
@@ -1837,7 +1684,7 @@
                       .map(
                         (project) => `
                         <div class="project-item" onclick="selectProject(${project.id})">
-                            <h3>${project.name}</h3>
+                            <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
                             <div class="project-meta">${project.project_code}</div>
                         </div>
                       `,
@@ -2036,47 +1883,6 @@
         document.body.appendChild(modal);
       }
 
-      // Toggle project completion status
-      window.toggleProjectStatus = async (projectId) => {
-        const project = projects.find((p) => p.id === projectId);
-        const newStatus = project.status === "active" ? "completed" : "active";
-        const action = newStatus === "completed" ? "complete" : "reopen";
-
-        // Confirmation dialog
-        if (!confirm(`Are you sure you want to ${action} "${project.name}"?`)) {
-          return;
-        }
-
-        try {
-          showNotification(
-            `${action === "complete" ? "Completing" : "Reopening"} project...`,
-            "info",
-          );
-
-          const response = await fetch(
-            `${API_BASE_URL}/projects/${projectId}`,
-            {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ status: newStatus }),
-            },
-          );
-
-          const data = await response.json();
-
-          if (data.project) {
-            showNotification(
-              `Project ${newStatus === "completed" ? "completed" : "reopened"}!`,
-              "success",
-            );
-            loadProjects(); // Reload projects to update counts
-          }
-        } catch (error) {
-          console.error("Error updating project status:", error);
-          showNotification("Failed to update project status", "error");
-        }
-      };
-
       // Window Functions
       window.selectProject = async (projectId) => {
         currentProject = projects.find((p) => p.id === projectId);
@@ -2091,47 +1897,6 @@
           .forEach((b) => b.classList.remove("active"));
         document.querySelector('[data-view="crew"]').classList.add("active");
         currentView = "crew";
-        renderView();
-      };
-
-      window.goToNewProject = () => {
-        document
-          .querySelectorAll(".nav-btn")
-          .forEach((b) => b.classList.remove("active"));
-        document
-          .querySelector('[data-view="projects"]')
-          .classList.add("active");
-        currentView = "projects";
-        renderView();
-
-        setTimeout(() => {
-          document
-            .getElementById("create-project-form")
-            ?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-      };
-
-      window.goToSchedule = () => {
-        if (!currentProject) {
-          showNotification("Please select a project first", "warning");
-          document
-            .querySelectorAll(".nav-btn")
-            .forEach((b) => b.classList.remove("active"));
-          document
-            .querySelector('[data-view="projects"]')
-            .classList.add("active");
-          currentView = "projects";
-          renderView();
-          return;
-        }
-
-        document
-          .querySelectorAll(".nav-btn")
-          .forEach((b) => b.classList.remove("active"));
-        document
-          .querySelector('[data-view="schedule"]')
-          .classList.add("active");
-        currentView = "schedule";
         renderView();
       };
 
@@ -2184,40 +1949,38 @@
       window.editProjectDates = async (projectId) => {
         const project = projects.find((p) => p.id === projectId);
 
-        // Create a modal with date pickers instead of prompt
         const modal = document.createElement("div");
         modal.className = "modal";
         modal.innerHTML = `
-    <div class="modal-content" style="max-width: 400px;">
-        <div class="modal-header">
-            <h2 style="color: var(--secondary);">Edit Project Dates</h2>
-            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-        </div>
-        <div style="padding: 1rem;">
-            <h3 style="margin-bottom: 1rem;">${project.name}</h3>
-            <div class="form-group">
-                <label>Start Date</label>
-                <input type="date" id="edit-start-date" value="${project.start_date}" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>End Date</label>
-                <input type="date" id="edit-end-date" value="${project.end_date}" class="form-control">
-            </div>
-            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button class="btn btn-success" style="flex: 1;" onclick="saveProjectDates(${project.id})">
-                    <i class="fas fa-save"></i> Save
-                </button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </div>
-  `;
+          <div class="modal-content" style="max-width: 400px;">
+              <div class="modal-header">
+                  <h2 style="color: var(--secondary);">Edit Project Dates</h2>
+                  <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+              </div>
+              <div style="padding: 1rem;">
+                  <h3 style="margin-bottom: 1rem;">${project.name}</h3>
+                  <div class="form-group">
+                      <label>Start Date</label>
+                      <input type="date" id="edit-start-date" value="${project.start_date}" class="form-control">
+                  </div>
+                  <div class="form-group">
+                      <label>End Date</label>
+                      <input type="date" id="edit-end-date" value="${project.end_date}" class="form-control">
+                  </div>
+                  <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                      <button class="btn btn-success" style="flex: 1;" onclick="saveProjectDates(${project.id})">
+                          <i class="fas fa-save"></i> Save
+                      </button>
+                      <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
+                          Cancel
+                      </button>
+                  </div>
+              </div>
+          </div>
+        `;
         document.body.appendChild(modal);
       };
 
-      // New function to save project dates
       window.saveProjectDates = async (projectId) => {
         const newStart = document.getElementById("edit-start-date")?.value;
         const newEnd = document.getElementById("edit-end-date")?.value;
@@ -2255,52 +2018,42 @@
         }
       };
 
-      // Navigate to relevant section when clicking activity
-      window.jumpToActivity = (type, projectId, crewId) => {
+      window.toggleProjectStatus = async (projectId) => {
         const project = projects.find((p) => p.id === projectId);
-        if (!project) return;
+        const newStatus = project.status === "active" ? "completed" : "active";
+        const action = newStatus === "completed" ? "complete" : "reopen";
 
-        currentProject = project;
+        if (!confirm(`Are you sure you want to ${action} "${project.name}"?`)) {
+          return;
+        }
 
-        switch (type) {
-          case "project_created":
-          case "project_completed":
-            // Go to projects view
-            document
-              .querySelectorAll(".nav-btn")
-              .forEach((b) => b.classList.remove("active"));
-            document
-              .querySelector('[data-view="projects"]')
-              .classList.add("active");
-            currentView = "projects";
-            renderView();
-            break;
+        try {
+          showNotification(
+            `${action === "complete" ? "Completing" : "Reopening"} project...`,
+            "info",
+          );
 
-          case "crew_joined":
-          case "crew_updated":
-          case "schedule_assigned":
-            // Go to crew view for this project
-            document
-              .querySelectorAll(".nav-btn")
-              .forEach((b) => b.classList.remove("active"));
-            document
-              .querySelector('[data-view="crew"]')
-              .classList.add("active");
-            currentView = "crew";
-            renderView();
-            break;
+          const response = await fetch(
+            `${API_BASE_URL}/projects/${projectId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus }),
+            },
+          );
 
-          case "callsheet_sent":
-            // Go to call sheets view
-            document
-              .querySelectorAll(".nav-btn")
-              .forEach((b) => b.classList.remove("active"));
-            document
-              .querySelector('[data-view="callsheets"]')
-              .classList.add("active");
-            currentView = "callsheets";
-            renderView();
-            break;
+          const data = await response.json();
+
+          if (data.project) {
+            showNotification(
+              `Project ${newStatus === "completed" ? "completed" : "reopened"}!`,
+              "success",
+            );
+            loadProjects();
+          }
+        } catch (error) {
+          console.error("Error updating project status:", error);
+          showNotification("Failed to update project status", "error");
         }
       };
     </script>
