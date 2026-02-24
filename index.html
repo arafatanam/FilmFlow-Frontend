@@ -1287,20 +1287,6 @@
 
     <div class="card">
         <div class="card-title">
-            <i class="fas fa-rocket"></i> Quick Actions
-        </div>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <button class="btn btn-primary" onclick="goToNewProject()">
-                <i class="fas fa-plus"></i> New Project
-            </button>
-            <button class="btn btn-secondary" onclick="goToSchedule()">
-                <i class="fas fa-calendar"></i> Manage Schedule
-            </button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-title">
             <i class="fas fa-project-diagram"></i> Recent Projects
         </div>
         <div class="project-list" id="recent-projects">
@@ -1319,7 +1305,7 @@
                     <div class="project-stats">
                         <div class="project-stat">
                             <div class="number">${project.total_crew || 0}</div>
-                            <div class="label">Crew</div>
+                            <div class="label">Crew(s)</div>
                         </div>
                     </div>
                 </div>
@@ -1387,7 +1373,7 @@
                     <div class="project-stats">
                         <div class="project-stat">
                             <div class="number">${project.total_crew || 0}</div>
-                            <div class="label">Crew</div>
+                            <div class="label">Crew(s)</div>
                         </div>
                     </div>
                     <div class="action-buttons">
