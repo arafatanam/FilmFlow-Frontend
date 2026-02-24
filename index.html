@@ -1498,8 +1498,10 @@
 
       // View crew member details (read-only)
       function viewCrewMember(crewId) {
-        const crew = crew.find((c) => c.id === crewId);
-        if (!crew) {
+        // Find the crew member from the global crew array
+        const crewMember = crew.find((c) => c.id === crewId);
+
+        if (!crewMember) {
           showNotification("Crew member not found", "error");
           return;
         }
@@ -1518,11 +1520,11 @@
             <!-- Profile Header -->
             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: white;">
-                    ${crew.full_name?.charAt(0) || "?"}
+                    ${crewMember.full_name?.charAt(0) || "?"}
                 </div>
                 <div>
-                    <h3 style="font-size: 1.4rem; margin-bottom: 0.25rem;">${crew.full_name}</h3>
-                    <span style="background: var(--medium); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--secondary);">${crew.department}</span>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 0.25rem;">${crewMember.full_name}</h3>
+                    <span style="background: var(--medium); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--secondary);">${crewMember.department}</span>
                 </div>
             </div>
 
@@ -1534,11 +1536,11 @@
                 <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
                     <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <span style="color: var(--text-muted);">Phone:</span>
-                        <span><i class="fas fa-phone"></i> ${crew.phone || "Not provided"}</span>
+                        <span><i class="fas fa-phone"></i> ${crewMember.phone || "Not provided"}</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
                         <span style="color: var(--text-muted);">Email:</span>
-                        <span><i class="fas fa-envelope"></i> ${crew.email}</span>
+                        <span><i class="fas fa-envelope"></i> ${crewMember.email}</span>
                     </div>
                 </div>
             </div>
@@ -1548,17 +1550,17 @@
                 <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
                     <i class="fas fa-ambulance"></i> Emergency Contact
                 </h4>
-                <div style="background: var(--dark); border-radius: 12px; padding: 1rem; ${!crew.emergency_name ? "border-left: 4px solid var(--danger);" : ""}">
+                <div style="background: var(--dark); border-radius: 12px; padding: 1rem; ${!crewMember.emergency_name ? "border-left: 4px solid var(--danger);" : ""}">
                     ${
-                      crew.emergency_name
+                      crewMember.emergency_name
                         ? `
                         <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <span style="color: var(--text-muted);">Name:</span>
-                            <span>${crew.emergency_name}</span>
+                            <span>${crewMember.emergency_name}</span>
                         </div>
                         <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
                             <span style="color: var(--text-muted);">Phone:</span>
-                            <span><i class="fas fa-phone"></i> ${crew.emergency_phone || "Not provided"}</span>
+                            <span><i class="fas fa-phone"></i> ${crewMember.emergency_phone || "Not provided"}</span>
                         </div>
                     `
                         : '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> No emergency contact provided</span>'
@@ -1573,9 +1575,9 @@
                 </h4>
                 <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
                     ${
-                      crew.dietary_restrictions &&
-                      crew.dietary_restrictions.length > 0
-                        ? crew.dietary_restrictions
+                      crewMember.dietary_restrictions &&
+                      crewMember.dietary_restrictions.length > 0
+                        ? crewMember.dietary_restrictions
                             .map(
                               (d) => `
                             <span style="display: inline-block; background: rgba(48,209,88,0.2); color: var(--success); padding: 0.25rem 1rem; border-radius: 20px; margin: 0.25rem; border: 1px solid var(--success);">
@@ -1597,25 +1599,25 @@
                 <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
                     <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <span style="color: var(--text-muted);">Insurance:</span>
-                        <span>${crew.has_insurance ? '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No</span>'}</span>
+                        <span>${crewMember.has_insurance ? '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No</span>'}</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
                         <span style="color: var(--text-muted);">Union:</span>
-                        <span>${crew.union_status || "Not specified"}</span>
+                        <span>${crewMember.union_status || "Not specified"}</span>
                     </div>
                 </div>
             </div>
 
             <!-- Address -->
             ${
-              crew.address
+              crewMember.address
                 ? `
                 <div style="margin-bottom: 1.5rem;">
                     <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
                         <i class="fas fa-map-marker-alt"></i> Address
                     </h4>
                     <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
-                        ${crew.address}
+                        ${crewMember.address}
                     </div>
                 </div>
             `
@@ -1624,14 +1626,14 @@
 
             <!-- Signup Date -->
             <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
-                <i class="far fa-calendar-alt"></i> Signed up on ${crew.signup_date ? formatDate(crew.signup_date) : "Unknown date"}
+                <i class="far fa-calendar-alt"></i> Signed up on ${crewMember.signup_date ? formatDate(crewMember.signup_date) : "Unknown date"}
             </div>
 
             <div style="display: flex; gap: 1rem; margin-top: 2rem;">
                 <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
                     <i class="fas fa-times"></i> Close
                 </button>
-                <button class="btn btn-primary" style="flex: 1;" onclick="editCrewMember(${crew.id}); this.closest('.modal').remove()">
+                <button class="btn btn-primary" style="flex: 1;" onclick="editCrewMember(${crewMember.id}); this.closest('.modal').remove()">
                     <i class="fas fa-edit"></i> Edit
                 </button>
             </div>
