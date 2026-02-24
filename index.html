@@ -697,14 +697,30 @@
 
     <script>
       const API_BASE_URL = "https://filmflow-api.onrender.com/api";
-      
+
       // Constants
       const DEPARTMENTS = [
-        "Camera", "Sound", "Grip", "Electric", "Art Department",
-        "Wardrobe", "Hair & Makeup", "Production", "Directing",
-        "Editing", "VFX", "Catering", "Transportation", "Locations",
-        "Safety", "Script Supervisor", "Stunt Coordination",
-        "Special Effects", "Props", "Set Decoration", "Construction"
+        "Camera",
+        "Sound",
+        "Grip",
+        "Electric",
+        "Art Department",
+        "Wardrobe",
+        "Hair & Makeup",
+        "Production",
+        "Directing",
+        "Editing",
+        "VFX",
+        "Catering",
+        "Transportation",
+        "Locations",
+        "Safety",
+        "Script Supervisor",
+        "Stunt Coordination",
+        "Special Effects",
+        "Props",
+        "Set Decoration",
+        "Construction",
       ];
 
       const DIETARY_OPTIONS = [
@@ -749,13 +765,13 @@
       // Helper Functions
       function getDietaryIcon(diet) {
         const icons = {
-          "Vegetarian": "🥗",
-          "Vegan": "🌱",
+          Vegetarian: "🥗",
+          Vegan: "🌱",
           "Gluten-Free": "🌾",
           "Nut Allergy": "🥜",
           "Dairy-Free": "🥛",
-          "Halal": "☪️",
-          "Kosher": "✡️",
+          Halal: "☪️",
+          Kosher: "✡️",
           "Shellfish Allergy": "🦐",
         };
         return icons[diet] || "📋";
@@ -1390,23 +1406,23 @@
       async function renderCrewView(container) {
         if (!currentProject) {
           container.innerHTML = `
-            <div class="card">
-                <div class="card-title">Select a Project</div>
-                <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
-                <div class="project-list">
-                    ${projects
-                      .map(
-                        (project) => `
-                        <div class="project-item" onclick="selectProject(${project.id})">
-                            <h3>${project.name}</h3>
-                            <div class="project-meta">${project.project_code}</div>
-                        </div>
-                      `,
-                      )
-                      .join("")}
-                </div>
-            </div>
-          `;
+      <div class="card">
+          <div class="card-title">Select a Project</div>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to view crew.</p>
+          <div class="project-list">
+              ${projects
+                .map(
+                  (project) => `
+                  <div class="project-item" onclick="selectProject(${project.id})">
+                      <h3>${project.name}</h3>
+                      <div class="project-meta">${project.project_code}</div>
+                  </div>
+                `,
+                )
+                .join("")}
+          </div>
+      </div>
+    `;
           return;
         }
 
@@ -1414,67 +1430,216 @@
         const crewByDept = data.byDepartment || {};
 
         container.innerHTML = `
-          <div class="card">
-              <div class="card-title">
-                  <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
-              </div>
-              <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
-                  <div>
-                      <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
-                      <div style="color: var(--text-muted);">Total Crew</div>
-                  </div>
-                  <div>
-                      <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
-                      <div style="color: var(--text-muted);">Completed</div>
-                  </div>
-                  <div>
-                      <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
-                      <div style="color: var(--text-muted);">Pending</div>
-                  </div>
-              </div>
-          </div>
+    <div class="card">
+        <div class="card-title">
+            <i class="fas fa-users"></i> ${currentProject.name} - Crew Signups
+        </div>
+        <div style="display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--secondary);">${data.total || 0}</div>
+                <div style="color: var(--text-muted);">Total Crew</div>
+            </div>
+            <div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--success);">${data.completed || 0}</div>
+                <div style="color: var(--text-muted);">Completed</div>
+            </div>
+            <div>
+                <div style="font-size: 2rem; font-weight: 800; color: var(--warning);">${data.pending || 0}</div>
+                <div style="color: var(--text-muted);">Pending</div>
+            </div>
+        </div>
+    </div>
 
-          ${Object.entries(crewByDept)
-            .map(
-              ([dept, members]) => `
-              <div class="card">
-                  <div class="card-title" style="color: var(--secondary);">
-                      ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
-                  </div>
-                  <div class="crew-grid">
-                      ${members
-                        .map(
-                          (member) => `
-                          <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
-                              <div class="crew-header">
-                                  <span class="crew-name">${member.full_name}</span>
-                                  <span class="crew-department">${member.department}</span>
-                              </div>
-                              <div class="crew-details">
-                                  <div><i class="fas fa-phone"></i> ${member.phone}</div>
-                                  <div><i class="fas fa-envelope"></i> ${member.email}</div>
-                              </div>
-                              <div class="crew-badges">
-                                  ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
-                                  ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
-                                  ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
-                                  ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${getDietaryIcon(d)} ${d}</span>`).join("")}
-                              </div>
-                              <div style="margin-top: 1rem; text-align: right;">
-                                  <button class="btn btn-sm btn-secondary" onclick="editCrewMember(${member.id})">
-                                      <i class="fas fa-edit"></i> Edit
-                                  </button>
-                              </div>
-                          </div>
+    ${Object.entries(crewByDept)
+      .map(
+        ([dept, members]) => `
+        <div class="card">
+            <div class="card-title" style="color: var(--secondary);">
+                ${dept} <span style="font-size: 0.9rem; color: var(--text-muted);">(${members.length})</span>
+            </div>
+            <div class="crew-grid">
+                ${members
+                  .map(
+                    (member) => `
+                    <div class="crew-card ${getCrewCardClass(member)} dept-${dept.toLowerCase().replace(/\s+/g, "-")}">
+                        <div class="crew-header">
+                            <span class="crew-name">${member.full_name}</span>
+                            <span class="crew-department">${member.department}</span>
+                        </div>
+                        <div class="crew-details">
+                            <div><i class="fas fa-phone"></i> ${member.phone}</div>
+                            <div><i class="fas fa-envelope"></i> ${member.email}</div>
+                        </div>
+                        <div class="crew-badges">
+                            ${!member.emergency_name ? '<span class="badge badge-danger">No Emergency</span>' : ""}
+                            ${!member.dietary_restrictions || member.dietary_restrictions.length === 0 ? '<span class="badge badge-warning">No Dietary</span>' : ""}
+                            ${!member.has_insurance ? '<span class="badge badge-warning">No Insurance</span>' : ""}
+                            ${member.dietary_restrictions?.map((d) => `<span class="badge badge-success">${getDietaryIcon(d)} ${d}</span>`).join("")}
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end;">
+                            <button class="btn btn-sm btn-secondary" onclick="viewCrewMember(${member.id})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="editCrewMember(${member.id})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                  `,
+                  )
+                  .join("")}
+            </div>
+        </div>
+      `,
+      )
+      .join("")}
+  `;
+      }
+
+      // View crew member details (read-only)
+      function viewCrewMember(crewId) {
+        const crew = crew.find((c) => c.id === crewId);
+        if (!crew) {
+          showNotification("Crew member not found", "error");
+          return;
+        }
+
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h2 style="color: var(--secondary);">
+                <i class="fas fa-user-circle"></i> Crew Details
+            </h2>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+        <div style="padding: 1rem;">
+            <!-- Profile Header -->
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div style="width: 60px; height: 60px; background: var(--primary); border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: white;">
+                    ${crew.full_name?.charAt(0) || "?"}
+                </div>
+                <div>
+                    <h3 style="font-size: 1.4rem; margin-bottom: 0.25rem;">${crew.full_name}</h3>
+                    <span style="background: var(--medium); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--secondary);">${crew.department}</span>
+                </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                    <i class="fas fa-address-card"></i> Contact Information
+                </h4>
+                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-muted);">Phone:</span>
+                        <span><i class="fas fa-phone"></i> ${crew.phone || "Not provided"}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                        <span style="color: var(--text-muted);">Email:</span>
+                        <span><i class="fas fa-envelope"></i> ${crew.email}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                    <i class="fas fa-ambulance"></i> Emergency Contact
+                </h4>
+                <div style="background: var(--dark); border-radius: 12px; padding: 1rem; ${!crew.emergency_name ? "border-left: 4px solid var(--danger);" : ""}">
+                    ${
+                      crew.emergency_name
+                        ? `
+                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <span style="color: var(--text-muted);">Name:</span>
+                            <span>${crew.emergency_name}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                            <span style="color: var(--text-muted);">Phone:</span>
+                            <span><i class="fas fa-phone"></i> ${crew.emergency_phone || "Not provided"}</span>
+                        </div>
+                    `
+                        : '<span style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> No emergency contact provided</span>'
+                    }
+                </div>
+            </div>
+
+            <!-- Dietary Restrictions -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                    <i class="fas fa-utensils"></i> Dietary Restrictions
+                </h4>
+                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                    ${
+                      crew.dietary_restrictions &&
+                      crew.dietary_restrictions.length > 0
+                        ? crew.dietary_restrictions
+                            .map(
+                              (d) => `
+                            <span style="display: inline-block; background: rgba(48,209,88,0.2); color: var(--success); padding: 0.25rem 1rem; border-radius: 20px; margin: 0.25rem; border: 1px solid var(--success);">
+                                ${getDietaryIcon(d)} ${d}
+                            </span>
                         `,
-                        )
-                        .join("")}
-                  </div>
-              </div>
-            `,
-            )
-            .join("")}
-        `;
+                            )
+                            .join("")
+                        : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No dietary restrictions specified</span>'
+                    }
+                </div>
+            </div>
+
+            <!-- Insurance & Union -->
+            <div style="margin-bottom: 1.5rem;">
+                <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                    <i class="fas fa-shield-alt"></i> Insurance & Union
+                </h4>
+                <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <span style="color: var(--text-muted);">Insurance:</span>
+                        <span>${crew.has_insurance ? '<span style="color: var(--success);"><i class="fas fa-check-circle"></i> Yes</span>' : '<span style="color: var(--warning);"><i class="fas fa-exclamation-triangle"></i> No</span>'}</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 100px 1fr; gap: 0.5rem;">
+                        <span style="color: var(--text-muted);">Union:</span>
+                        <span>${crew.union_status || "Not specified"}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address -->
+            ${
+              crew.address
+                ? `
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: var(--secondary); margin-bottom: 1rem; font-size: 1rem;">
+                        <i class="fas fa-map-marker-alt"></i> Address
+                    </h4>
+                    <div style="background: var(--dark); border-radius: 12px; padding: 1rem;">
+                        ${crew.address}
+                    </div>
+                </div>
+            `
+                : ""
+            }
+
+            <!-- Signup Date -->
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                <i class="far fa-calendar-alt"></i> Signed up on ${crew.signup_date ? formatDate(crew.signup_date) : "Unknown date"}
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="editCrewMember(${crew.id}); this.closest('.modal').remove()">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+        </div>
+    </div>
+  `;
+
+        document.body.appendChild(modal);
       }
 
       async function renderScheduleView(container) {
