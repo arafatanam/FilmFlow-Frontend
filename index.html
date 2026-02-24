@@ -1233,174 +1233,161 @@
       }
 
       function renderDashboard(container) {
+        // Calculate active projects count (only projects with status "active")
         const totalProjects = projects.length;
         const activeProjects = projects.filter(
           (p) => p.status === "active",
         ).length;
+
+        // Calculate total crew members across all projects
         const totalCrew = projects.reduce(
           (sum, p) => sum + (p.total_crew || 0),
           0,
         );
-        const pendingForms = projects.reduce(
-          (sum, p) => sum + (p.pending_forms || 0),
-          0,
-        );
 
         container.innerHTML = `
-          <div class="stats-grid">
-              <div class="stat-card">
-                  <div class="stat-number">${totalProjects}</div>
-                  <div class="stat-label">Total Projects</div>
-              </div>
-              <div class="stat-card">
-                  <div class="stat-number">${activeProjects}</div>
-                  <div class="stat-label">Active Projects</div>
-              </div>
-              <div class="stat-card">
-                  <div class="stat-number">${totalCrew}</div>
-                  <div class="stat-label">Crew Members</div>
-              </div>
-              <div class="stat-card">
-                  <div class="stat-number">${pendingForms}</div>
-                  <div class="stat-label">Pending Forms</div>
-              </div>
-          </div>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">${totalProjects}</div>
+            <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${activeProjects}</div>
+            <div class="stat-label">Active Projects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${totalCrew}</div>
+            <div class="stat-label">Crew Members</div>
+        </div>
+    </div>
 
-          <div class="card">
-              <div class="card-title">
-                  <i class="fas fa-rocket"></i> Quick Actions
-              </div>
-              <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                  <button class="btn btn-primary" onclick="goToNewProject()">
-                      <i class="fas fa-plus"></i> New Project
-                  </button>
-                  <button class="btn btn-secondary" onclick="goToSchedule()">
-                      <i class="fas fa-calendar"></i> Manage Schedule
-                  </button>
-              </div>
-          </div>
+    <div class="card">
+        <div class="card-title">
+            <i class="fas fa-rocket"></i> Quick Actions
+        </div>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="goToNewProject()">
+                <i class="fas fa-plus"></i> New Project
+            </button>
+            <button class="btn btn-secondary" onclick="goToSchedule()">
+                <i class="fas fa-calendar"></i> Manage Schedule
+            </button>
+        </div>
+    </div>
 
-          <div class="card">
-              <div class="card-title">
-                  <i class="fas fa-project-diagram"></i> Recent Projects
-              </div>
-              <div class="project-list" id="recent-projects">
-                  ${projects
-                    .slice(0, 5)
-                    .map(
-                      (project) => `
-                      <div class="project-item" onclick="selectProject(${project.id})">
-                          <div class="project-info">
-                              <h3>${project.name}</h3>
-                              <div class="project-meta">
-                                  <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                                  <span><i class="fas fa-code"></i> ${project.project_code}</span>
-                              </div>
-                          </div>
-                          <div class="project-stats">
-                              <div class="project-stat">
-                                  <div class="number">${project.total_crew || 0}</div>
-                                  <div class="label">Crew</div>
-                              </div>
-                              <div class="project-stat">
-                                  <div class="number">${project.completed_forms || 0}/${project.total_crew || 0}</div>
-                                  <div class="label">Complete</div>
-                              </div>
-                          </div>
-                      </div>
-                    `,
-                    )
-                    .join("")}
-              </div>
-          </div>
-        `;
+    <div class="card">
+        <div class="card-title">
+            <i class="fas fa-project-diagram"></i> Recent Projects
+        </div>
+        <div class="project-list" id="recent-projects">
+            ${projects
+              .slice(0, 5)
+              .map(
+                (project) => `
+                <div class="project-item" onclick="selectProject(${project.id})">
+                    <div class="project-info">
+                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓ Completed</span>' : ""}</h3>
+                        <div class="project-meta">
+                            <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
+                            <span><i class="fas fa-code"></i> ${project.project_code}</span>
+                        </div>
+                    </div>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <div class="number">${project.total_crew || 0}</div>
+                            <div class="label">Crew</div>
+                        </div>
+                    </div>
+                </div>
+              `,
+              )
+              .join("")}
+        </div>
+    </div>
+  `;
       }
 
       function renderProjects(container) {
         container.innerHTML = `
-          <div class="card">
-              <div class="card-title">
-                  <i class="fas fa-plus-circle"></i> Create New Project
-              </div>
-              <form id="create-project-form" onsubmit="handleCreateProject(event)">
-                  <div class="form-group">
-                      <label>Project Name</label>
-                      <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
-                  </div>
-                  <div class="form-row">
-                      <div class="form-group">
-                          <label>Start Date</label>
-                          <input type="date" id="project-start" required>
-                      </div>
-                      <div class="form-group">
-                          <label>End Date</label>
-                          <input type="date" id="project-end" required>
-                      </div>
-                  </div>
-                  <div class="form-group">
-                      <label>Location (for weather)</label>
-                      <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
-                  </div>
-                  <button type="submit" class="btn btn-primary">
-                      <i class="fas fa-magic"></i> Create Project & Generate Link
-                  </button>
-              </form>
-          </div>
+    <div class="card">
+        <div class="card-title">
+            <i class="fas fa-plus-circle"></i> Create New Project
+        </div>
+        <form id="create-project-form" onsubmit="handleCreateProject(event)">
+            <div class="form-group">
+                <label>Project Name</label>
+                <input type="text" id="project-name" required placeholder="e.g., Summer Commercial 2024">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="project-start" required>
+                </div>
+                <div class="form-group">
+                    <label>End Date</label>
+                    <input type="date" id="project-end" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Location (for weather)</label>
+                <input type="text" id="project-location" placeholder="e.g., Los Angeles, CA">
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-magic"></i> Create Project & Generate Link
+            </button>
+        </form>
+    </div>
 
-          <div class="card">
-              <div class="card-title">
-                  <i class="fas fa-list"></i> All Projects
-              </div>
-              <div class="project-list">
-                  ${projects
-                    .map(
-                      (project) => `
-                      <div class="project-item" style="cursor: default;">
-                          <div class="project-info">
-                              <h3>${project.name}</h3>
-                              <div class="project-meta">
-                                  <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
-                                  <span><i class="fas fa-code"></i> ${project.project_code}</span>
-                              </div>
-                              <div class="invite-box">
-                                  <input type="text" value="${getInviteLink(project.project_code)}" readonly>
-                                  <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
-                                      <i class="fas fa-copy"></i>
-                                  </button>
-                              </div>
-                          </div>
-                          <div class="project-stats">
-                              <div class="project-stat">
-                                  <div class="number">${project.total_crew || 0}</div>
-                                  <div class="label">Crew</div>
-                              </div>
-                              <div class="project-stat">
-                                  <div class="number">${project.completed_forms || 0}</div>
-                                  <div class="label">Complete</div>
-                              </div>
-                              <div class="project-stat">
-                                  <div class="number">${project.pending_forms || 0}</div>
-                                  <div class="label">Pending</div>
-                              </div>
-                          </div>
-                          <div class="action-buttons">
-                              <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
-                                  <i class="fas fa-eye"></i> View
-                              </button>
-                              <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
-                                  <i class="fas fa-edit"></i> Edit Dates
-                              </button>
-                              <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
-                                  <i class="fas fa-trash"></i> Delete
-                              </button>
-                          </div>
-                      </div>
-                    `,
-                    )
-                    .join("")}
-              </div>
-          </div>
-        `;
+    <div class="card">
+        <div class="card-title">
+            <i class="fas fa-list"></i> All Projects
+        </div>
+        <div class="project-list">
+            ${projects
+              .map(
+                (project) => `
+                <div class="project-item" style="cursor: default; ${project.status === "completed" ? "opacity: 0.8;" : ""}">
+                    <div class="project-info">
+                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓ Completed</span>' : ""}</h3>
+                        <div class="project-meta">
+                            <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
+                            <span><i class="fas fa-code"></i> ${project.project_code}</span>
+                        </div>
+                        <div class="invite-box">
+                            <input type="text" value="${getInviteLink(project.project_code)}" readonly>
+                            <button class="btn btn-sm btn-success" onclick="copyInviteLink('${getInviteLink(project.project_code)}')">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="project-stats">
+                        <div class="project-stat">
+                            <div class="number">${project.total_crew || 0}</div>
+                            <div class="label">Crew</div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-sm btn-secondary" onclick="selectProject(${project.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editProjectDates(${project.id})">
+                            <i class="fas fa-edit"></i> Dates
+                        </button>
+                        <button class="btn btn-sm ${project.status === "active" ? "btn-success" : "btn-secondary"}" onclick="toggleProjectStatus(${project.id})">
+                            <i class="fas ${project.status === "active" ? "fa-check-circle" : "fa-undo"}"></i> 
+                            ${project.status === "active" ? "Complete" : "Reopen"}
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProject(${project.id})">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+              `,
+              )
+              .join("")}
+        </div>
+    </div>
+  `;
       }
 
       async function renderCrewView(container) {
@@ -1929,6 +1916,47 @@
         document.body.appendChild(modal);
       }
 
+      // Toggle project completion status
+      window.toggleProjectStatus = async (projectId) => {
+        const project = projects.find((p) => p.id === projectId);
+        const newStatus = project.status === "active" ? "completed" : "active";
+        const action = newStatus === "completed" ? "complete" : "reopen";
+
+        // Confirmation dialog
+        if (!confirm(`Are you sure you want to ${action} "${project.name}"?`)) {
+          return;
+        }
+
+        try {
+          showNotification(
+            `${action === "complete" ? "Completing" : "Reopening"} project...`,
+            "info",
+          );
+
+          const response = await fetch(
+            `${API_BASE_URL}/projects/${projectId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ status: newStatus }),
+            },
+          );
+
+          const data = await response.json();
+
+          if (data.project) {
+            showNotification(
+              `Project ${newStatus === "completed" ? "completed" : "reopened"}!`,
+              "success",
+            );
+            loadProjects(); // Reload projects to update counts
+          }
+        } catch (error) {
+          console.error("Error updating project status:", error);
+          showNotification("Failed to update project status", "error");
+        }
+      };
+
       // Window Functions
       window.selectProject = async (projectId) => {
         currentProject = projects.find((p) => p.id === projectId);
@@ -2035,37 +2063,75 @@
 
       window.editProjectDates = async (projectId) => {
         const project = projects.find((p) => p.id === projectId);
-        const newStart = prompt(
-          "Enter new start date (YYYY-MM-DD):",
-          project.start_date,
-        );
-        const newEnd = prompt(
-          "Enter new end date (YYYY-MM-DD):",
-          project.end_date,
-        );
 
-        if (newStart && newEnd) {
-          try {
-            const response = await fetch(
-              `${API_BASE_URL}/projects/${projectId}`,
-              {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  start_date: newStart,
-                  end_date: newEnd,
-                }),
-              },
-            );
-            const data = await response.json();
-            if (data.project) {
-              showNotification("Project dates updated!", "success");
-              loadProjects();
-            }
-          } catch (error) {
-            console.error("Error updating project:", error);
-            showNotification("Failed to update project", "error");
+        // Create a modal with date pickers instead of prompt
+        const modal = document.createElement("div");
+        modal.className = "modal";
+        modal.innerHTML = `
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h2 style="color: var(--secondary);">Edit Project Dates</h2>
+            <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+        </div>
+        <div style="padding: 1rem;">
+            <h3 style="margin-bottom: 1rem;">${project.name}</h3>
+            <div class="form-group">
+                <label>Start Date</label>
+                <input type="date" id="edit-start-date" value="${project.start_date}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>End Date</label>
+                <input type="date" id="edit-end-date" value="${project.end_date}" class="form-control">
+            </div>
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn btn-success" style="flex: 1;" onclick="saveProjectDates(${project.id})">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="this.closest('.modal').remove()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+  `;
+        document.body.appendChild(modal);
+      };
+
+      // New function to save project dates
+      window.saveProjectDates = async (projectId) => {
+        const newStart = document.getElementById("edit-start-date")?.value;
+        const newEnd = document.getElementById("edit-end-date")?.value;
+
+        if (!newStart || !newEnd) {
+          alert("Please select both dates");
+          return;
+        }
+
+        try {
+          showNotification("Updating project dates...", "info");
+
+          const response = await fetch(
+            `${API_BASE_URL}/projects/${projectId}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                start_date: newStart,
+                end_date: newEnd,
+              }),
+            },
+          );
+
+          const data = await response.json();
+
+          if (data.project) {
+            document.querySelector(".modal")?.remove();
+            showNotification("Project dates updated!", "success");
+            loadProjects();
           }
+        } catch (error) {
+          console.error("Error updating project:", error);
+          showNotification("Failed to update project", "error");
         }
       };
     </script>
