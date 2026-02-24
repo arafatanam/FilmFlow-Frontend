@@ -143,6 +143,7 @@
             box-shadow: 0 0 0 3px rgba(255,45,85,0.2);
         }
 
+        /* Updated checkbox styles - no visible checkbox */
         .checkbox-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -155,12 +156,15 @@
             border: 2px solid rgba(255,255,255,0.1);
             border-radius: 8px;
             padding: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            text-align: center;
             cursor: pointer;
             transition: all 0.2s;
             user-select: none;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
 
         .checkbox-item:hover {
@@ -173,18 +177,9 @@
             background: rgba(255,45,85,0.1);
         }
 
+        /* Hide the actual checkbox */
         .checkbox-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            margin: 0;
-            cursor: pointer;
-            accent-color: var(--primary);
-            pointer-events: auto;
-        }
-
-        .checkbox-item span {
-            cursor: pointer;
-            font-size: 0.95rem;
+            display: none;
         }
 
         .date-grid {
@@ -305,22 +300,9 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Remove profile preview since we're not using it anymore */
         .profile-preview {
-            background: var(--dark);
-            border-radius: 12px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            border-left: 4px solid var(--secondary);
-        }
-
-        .profile-preview h3 {
-            color: var(--secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        .profile-preview p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            display: none;
         }
 
         .error-message {
@@ -330,6 +312,34 @@
             border-radius: 8px;
             margin-bottom: 1rem;
             border-left: 4px solid var(--danger);
+        }
+
+        /* Insurance checkbox - also hidden checkbox */
+        .insurance-item {
+            background: var(--dark);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .insurance-item:hover {
+            border-color: var(--primary);
+            background: rgba(255,45,85,0.05);
+        }
+
+        .insurance-item.selected {
+            border-color: var(--primary);
+            background: rgba(255,45,85,0.1);
+        }
+
+        .insurance-item input[type="checkbox"] {
+            display: none;
         }
 
         @media (max-width: 480px) {
@@ -360,7 +370,6 @@
 
         let projectCode = null;
         let project = null;
-        let existingProfile = null;
         let selectedDates = [];
         let formData = {
             full_name: "",
@@ -390,6 +399,18 @@
             "Dairy-Free", "Halal", "Kosher", "Shellfish Allergy",
         ];
 
+        // Check if this link has already been used
+        function checkIfAlreadySubmitted() {
+            const submittedProjects = JSON.parse(localStorage.getItem('filmflow_submitted') || '{}');
+            return submittedProjects[projectCode] === true;
+        }
+
+        function markAsSubmitted() {
+            const submittedProjects = JSON.parse(localStorage.getItem('filmflow_submitted') || '{}');
+            submittedProjects[projectCode] = true;
+            localStorage.setItem('filmflow_submitted', JSON.stringify(submittedProjects));
+        }
+
         document.addEventListener("DOMContentLoaded", async () => {
             const urlParams = new URLSearchParams(window.location.search);
             projectCode = urlParams.get("project");
@@ -401,13 +422,32 @@
                 return;
             }
 
-            const savedEmail = localStorage.getItem("filmflow_email");
-            if (savedEmail) {
-                await checkExistingProfile(savedEmail);
+            // Check if already submitted
+            if (checkIfAlreadySubmitted()) {
+                showAlreadySubmitted();
+                return;
             }
 
             await loadProject();
         });
+
+        function showAlreadySubmitted() {
+            document.getElementById("main-content").innerHTML = `
+                <div class="container">
+                    <div class="card" style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--success); margin-bottom: 1rem;"></i>
+                        <h2 style="color: var(--success); margin-bottom: 1rem;">Already Signed Up!</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                            You've already submitted your information for this project.<br><br>
+                            If you need to make changes, please contact the production team.
+                        </p>
+                        <button class="btn btn-primary" onclick="window.location.href = 'https://filmfloww.netlify.app'">
+                            <i class="fas fa-home"></i> Return to Home
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
 
         async function loadProject() {
             try {
@@ -431,38 +471,6 @@
             } catch (error) {
                 console.error("Error loading project:", error);
                 showError("Failed to load project. Please try again.");
-            }
-        }
-
-        async function checkExistingProfile(email) {
-            try {
-                const response = await fetch(`${API_BASE_URL}/crew/check`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email }),
-                });
-
-                const data = await response.json();
-
-                if (data.exists) {
-                    existingProfile = data.profile;
-                    formData = {
-                        ...formData,
-                        full_name: existingProfile.full_name || "",
-                        phone: existingProfile.phone || "",
-                        email: existingProfile.email || "",
-                        department: existingProfile.department || "",
-                        emergency_name: existingProfile.emergency_name || "",
-                        emergency_phone: existingProfile.emergency_phone || "",
-                        dietary_restrictions: existingProfile.dietary_restrictions || [],
-                        address: existingProfile.address || "",
-                        union_status: existingProfile.union_status || "",
-                        has_insurance: existingProfile.has_insurance || false,
-                        insurance_expiry: existingProfile.insurance_expiry || "",
-                    };
-                }
-            } catch (error) {
-                console.error("Error checking profile:", error);
             }
         }
 
@@ -531,7 +539,9 @@
                     throw new Error(data.error || "Failed to sign up");
                 }
 
-                localStorage.setItem("filmflow_email", formData.email);
+                // Mark this project as submitted
+                markAsSubmitted();
+                
                 renderSuccess();
             } catch (error) {
                 console.error("Error submitting signup:", error);
@@ -580,13 +590,6 @@
                 </div>
 
                 <div class="container">
-                    ${existingProfile ? `
-                        <div class="profile-preview">
-                            <h3><i class="fas fa-user-check"></i> Welcome Back!</h3>
-                            <p>We've pre-filled your information from your previous signup. Please review and update if needed.</p>
-                        </div>
-                    ` : ""}
-
                     <div class="card">
                         <div class="card-title">
                             <i class="fas fa-user"></i> Personal Information
@@ -594,17 +597,17 @@
 
                         <div class="form-group">
                             <label><i class="fas fa-user"></i> Full Name *</label>
-                            <input type="text" id="full_name" value="${formData.full_name}" placeholder="John Doe">
+                            <input type="text" id="full_name" value="" placeholder="John Doe">
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label><i class="fas fa-phone"></i> Phone *</label>
-                                <input type="tel" id="phone" value="${formData.phone}" placeholder="(555) 123-4567">
+                                <input type="tel" id="phone" value="" placeholder="(555) 123-4567">
                             </div>
                             <div class="form-group">
                                 <label><i class="fas fa-envelope"></i> Email *</label>
-                                <input type="email" id="email" value="${formData.email}" placeholder="john@example.com">
+                                <input type="email" id="email" value="" placeholder="john@example.com">
                             </div>
                         </div>
 
@@ -613,7 +616,7 @@
                             <select id="department">
                                 <option value="">Select your department...</option>
                                 ${DEPARTMENTS.map(dept => `
-                                    <option value="${dept}" ${formData.department === dept ? "selected" : ""}>${dept}</option>
+                                    <option value="${dept}">${dept}</option>
                                 `).join("")}
                             </select>
                         </div>
@@ -625,15 +628,12 @@
                         </div>
 
                         <div class="checkbox-grid" id="dietary-grid">
-                            ${DIETARY_OPTIONS.map(option => {
-                                const isChecked = formData.dietary_restrictions.includes(option);
-                                return `
-                                    <div class="checkbox-item ${isChecked ? "selected" : ""}" data-value="${option}">
-                                        <input type="checkbox" value="${option}" ${isChecked ? "checked" : ""}>
-                                        <span>${getDietaryIcon(option)} ${option}</span>
-                                    </div>
-                                `;
-                            }).join("")}
+                            ${DIETARY_OPTIONS.map(option => `
+                                <div class="checkbox-item" data-value="${option}">
+                                    <input type="checkbox" value="${option}">
+                                    <span>${getDietaryIcon(option)} ${option}</span>
+                                </div>
+                            `).join("")}
                         </div>
                     </div>
 
@@ -648,9 +648,8 @@
                         <div class="date-grid" id="date-grid">
                             ${dates.map(date => {
                                 const dateObj = new Date(date);
-                                const isSelected = selectedDates.includes(date);
                                 return `
-                                    <div class="date-item ${isSelected ? "selected" : ""}" data-date="${date}">
+                                    <div class="date-item" data-date="${date}">
                                         <div class="day">${dateObj.getDate()}</div>
                                         <div class="weekday">${dateObj.toLocaleDateString("en-US", { weekday: "short" })}</div>
                                     </div>
@@ -667,11 +666,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Emergency Contact Name</label>
-                                <input type="text" id="emergency_name" value="${formData.emergency_name}" placeholder="Jane Doe">
+                                <input type="text" id="emergency_name" value="" placeholder="Jane Doe">
                             </div>
                             <div class="form-group">
                                 <label>Emergency Contact Phone</label>
-                                <input type="tel" id="emergency_phone" value="${formData.emergency_phone}" placeholder="(555) 987-6543">
+                                <input type="tel" id="emergency_phone" value="" placeholder="(555) 987-6543">
                             </div>
                         </div>
                     </div>
@@ -682,20 +681,20 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="checkbox-item" style="padding: 0.75rem; background: transparent; border: 2px solid ${formData.has_insurance ? "var(--primary)" : "rgba(255,255,255,0.1)"};">
-                                <input type="checkbox" id="has_insurance" ${formData.has_insurance ? "checked" : ""}>
+                            <div class="insurance-item" id="insurance-item">
+                                <input type="checkbox" id="has_insurance">
                                 <span>I have current production insurance</span>
-                            </label>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label>Union Status (Optional)</label>
-                            <input type="text" id="union_status" value="${formData.union_status}" placeholder="e.g., SAG-AFTRA, IATSE">
+                            <input type="text" id="union_status" value="" placeholder="e.g., SAG-AFTRA, IATSE">
                         </div>
 
                         <div class="form-group">
                             <label>Address (Optional)</label>
-                            <textarea id="address" rows="2" placeholder="Your address...">${formData.address}</textarea>
+                            <textarea id="address" rows="2" placeholder="Your address..."></textarea>
                         </div>
                     </div>
 
@@ -719,27 +718,30 @@
             document.getElementById('address')?.addEventListener('input', (e) => formData.address = e.target.value);
             document.getElementById('union_status')?.addEventListener('input', (e) => formData.union_status = e.target.value);
 
-            // Insurance checkbox
+            // Insurance checkbox - whole box clickable
+            const insuranceItem = document.getElementById('insurance-item');
             const insuranceCheckbox = document.getElementById('has_insurance');
-            if (insuranceCheckbox) {
-                insuranceCheckbox.addEventListener('change', (e) => {
-                    formData.has_insurance = e.target.checked;
-                    const parent = e.target.closest('.checkbox-item');
-                    if (parent) {
-                        parent.style.borderColor = e.target.checked ? 'var(--primary)' : 'rgba(255,255,255,0.1)';
+            if (insuranceItem && insuranceCheckbox) {
+                insuranceItem.addEventListener('click', () => {
+                    insuranceCheckbox.checked = !insuranceCheckbox.checked;
+                    formData.has_insurance = insuranceCheckbox.checked;
+                    if (insuranceCheckbox.checked) {
+                        insuranceItem.classList.add('selected');
+                    } else {
+                        insuranceItem.classList.remove('selected');
                     }
                 });
             }
 
-            // Dietary checkboxes - improved handling
+            // Dietary checkboxes - whole box clickable, no visible checkbox
             document.querySelectorAll('#dietary-grid .checkbox-item').forEach(item => {
                 const checkbox = item.querySelector('input[type="checkbox"]');
                 
-                // Handle checkbox change
-                checkbox.addEventListener('change', (e) => {
-                    e.stopPropagation();
-                    const option = e.target.value;
-                    if (e.target.checked) {
+                item.addEventListener('click', () => {
+                    checkbox.checked = !checkbox.checked;
+                    const option = checkbox.value;
+                    
+                    if (checkbox.checked) {
                         if (!formData.dietary_restrictions.includes(option)) {
                             formData.dietary_restrictions.push(option);
                         }
@@ -749,15 +751,6 @@
                         item.classList.remove('selected');
                     }
                     console.log('Dietary restrictions:', formData.dietary_restrictions);
-                });
-
-                // Handle clicking on the item itself (not just checkbox)
-                item.addEventListener('click', (e) => {
-                    if (e.target !== checkbox) {
-                        checkbox.checked = !checkbox.checked;
-                        const event = new Event('change', { bubbles: true });
-                        checkbox.dispatchEvent(event);
-                    }
                 });
             });
 
@@ -790,15 +783,11 @@
                         <div class="success-title">You're In!</div>
                         <div class="success-message">
                             <p>Thank you for joining <strong>${project?.name}</strong>!</p>
-                            <p style="margin-top: 1rem;">What happens next:</p>
-                            <ul style="text-align: left; margin-top: 1rem; padding-left: 1.5rem;">
-                                <li>The production team will assign you to specific shoot days</li>
-                                <li>You'll receive call sheets via email when ready</li>
-                                <li>You can update your profile anytime using the same link</li>
-                            </ul>
+                            <p style="margin-top: 1rem;">This link has been used and cannot be used again.</p>
+                            <p style="margin-top: 1rem;">If you need to make changes, please contact the production team.</p>
                         </div>
-                        <button class="btn btn-primary" onclick="window.location.href = window.location.pathname + '?project=${projectCode}'">
-                            <i class="fas fa-redo"></i> Sign Up Another Crew Member
+                        <button class="btn btn-primary" onclick="window.location.href = 'https://filmfloww.netlify.app'">
+                            <i class="fas fa-home"></i> Return to Home
                         </button>
                     </div>
                 </div>
