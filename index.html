@@ -165,7 +165,8 @@
         background: var(--dark);
         border-radius: 12px;
         padding: 1.5rem;
-        border-left: 4px solid var(--primary);
+        border: 2px solid var(--primary); /* Changed from border-left to full border */
+        transition: all 0.2s;
       }
 
       .stat-number {
@@ -1233,17 +1234,35 @@
       }
 
       function renderDashboard(container) {
-        // Calculate active projects count (only projects with status "active")
+        // Calculate stats
         const totalProjects = projects.length;
         const activeProjects = projects.filter(
           (p) => p.status === "active",
         ).length;
+        const completedProjects = projects.filter(
+          (p) => p.status === "completed",
+        ).length;
 
-        // Calculate total crew members across all projects
-        const totalCrew = projects.reduce(
-          (sum, p) => sum + (p.total_crew || 0),
-          0,
-        );
+        // Calculate total crew and unique departments
+        let totalCrew = 0;
+        let uniqueDepartments = new Set();
+
+        projects.forEach((project) => {
+          totalCrew += project.total_crew || 0;
+          // We'll need to load department data properly, but for now use a placeholder
+        });
+
+        // Calculate upcoming shoots (projects starting in next 7 days)
+        const today = new Date();
+        const nextWeek = new Date(today);
+        nextWeek.setDate(today.getDate() + 7);
+
+        const upcomingShoots = projects.filter((p) => {
+          const startDate = new Date(p.start_date);
+          return (
+            p.status === "active" && startDate >= today && startDate <= nextWeek
+          );
+        }).length;
 
         container.innerHTML = `
     <div class="stats-grid">
@@ -1256,8 +1275,12 @@
             <div class="stat-label">Active Projects</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">${totalCrew}</div>
-            <div class="stat-label">Crew Members</div>
+            <div class="stat-number">${completedProjects}</div>
+            <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">${upcomingShoots}</div>
+            <div class="stat-label">Upcoming Shoots</div>
         </div>
     </div>
 
@@ -1286,7 +1309,7 @@
                 (project) => `
                 <div class="project-item" onclick="selectProject(${project.id})">
                     <div class="project-info">
-                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓ Completed</span>' : ""}</h3>
+                        <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
                         <div class="project-meta">
                             <span><i class="far fa-calendar"></i> ${formatDateRange(project.start_date, project.end_date)}</span>
                             <span><i class="fas fa-code"></i> ${project.project_code}</span>
