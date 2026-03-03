@@ -2067,54 +2067,108 @@
         }
       };
 
-      // Save all changes to database - using bulk update
-      // Save all changes to database - using bulk update with better error handling
+      // Save all changes to database - DEBUG VERSION
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
 
+          // First, let's see what we're working with
+          console.log("========== DEBUG INFO ==========");
+          console.log("Current Project ID:", currentProject?.id);
+          console.log(
+            "Working Schedule:",
+            JSON.stringify(window.workingSchedule, null, 2),
+          );
+
           const dates = Object.keys(window.workingSchedule);
+          console.log("Dates to process:", dates);
+
+          if (dates.length === 0) {
+            showNotification("No changes to save", "info");
+            return;
+          }
+
           let totalSaved = 0;
           let totalFailed = 0;
 
           for (const date of dates) {
             const crewList = window.workingSchedule[date] || [];
+            console.log(`\n📅 Processing date: ${date}`);
+            console.log(`Crew list (${crewList.length} members):`, crewList);
 
-            if (crewList.length === 0) continue;
+            if (crewList.length === 0) {
+              console.log("No crew for this date, skipping");
+              continue;
+            }
 
-            console.log(`Saving for ${date}:`, crewList);
+            // Validate each assignment
+            const validAssignments = crewList.filter(
+              (a) => a.crew_id && a.department,
+            );
+            console.log(
+              `Valid assignments: ${validAssignments.length}/${crewList.length}`,
+            );
+
+            if (validAssignments.length === 0) {
+              console.log("No valid assignments for this date");
+              totalFailed += crewList.length;
+              continue;
+            }
+
+            const payload = {
+              project_id: currentProject.id,
+              date: date,
+              assignments: validAssignments,
+            };
+
+            console.log("Sending payload:", JSON.stringify(payload, null, 2));
 
             try {
               const response = await fetch(
                 `${API_BASE_URL}/schedule/bulk-update`,
                 {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    project_id: currentProject.id,
-                    date: date,
-                    assignments: crewList,
-                  }),
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                  },
+                  body: JSON.stringify(payload),
                 },
               );
 
-              const responseData = await response.json();
+              console.log(`Response status: ${response.status}`);
+
+              const responseText = await response.text();
+              console.log("Raw response:", responseText);
+
+              let responseData;
+              try {
+                responseData = JSON.parse(responseText);
+              } catch (e) {
+                console.error(
+                  "Failed to parse response as JSON:",
+                  responseText,
+                );
+                responseData = { error: "Invalid JSON response" };
+              }
 
               if (response.ok) {
-                totalSaved += crewList.length;
-                console.log(
-                  `✅ Updated ${date} with ${crewList.length} crew members`,
-                  responseData,
-                );
+                totalSaved += validAssignments.length;
+                console.log(`✅ Success for ${date}:`, responseData);
               } else {
-                totalFailed += crewList.length;
-                console.error(`❌ Failed to update ${date}:`, responseData);
+                totalFailed += validAssignments.length;
+                console.error(`❌ Failed for ${date}:`, responseData);
               }
             } catch (err) {
-              totalFailed += crewList.length;
-              console.error(`❌ Error updating ${date}:`, err);
+              totalFailed += validAssignments.length;
+              console.error(`❌ Network error for ${date}:`, err);
             }
           }
+
+          console.log("\n========== RESULTS ==========");
+          console.log(
+            `Total saved: ${totalSaved}, Total failed: ${totalFailed}`,
+          );
 
           if (totalFailed === 0) {
             showNotification(
@@ -2123,7 +2177,7 @@
             );
           } else {
             showNotification(
-              `⚠️ Saved ${totalSaved} assignments, ${totalFailed} failed`,
+              `⚠️ Saved ${totalSaved} assignments, ${totalFailed} failed. Check console for details.`,
               "warning",
             );
           }
@@ -2133,7 +2187,7 @@
           window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
-          console.error("Error saving schedule:", error);
+          console.error("❌ Fatal error in saveSchedule:", error);
           showNotification(
             "❌ Failed to save schedule: " + error.message,
             "error",
