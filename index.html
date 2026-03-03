@@ -2067,75 +2067,48 @@
         }
       };
 
-      // Save all changes to database
+      // Save all changes to database - using bulk update
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
 
-          // Get all assignments from working schedule
-          const assignments = [];
-          for (const [date, crewList] of Object.entries(
-            window.workingSchedule,
-          )) {
-            for (const assignment of crewList) {
-              assignments.push({
-                project_id: currentProject.id,
-                crew_id: assignment.crew_id,
-                shoot_date: date,
-                call_time: assignment.call_time || "06:00",
-                department: assignment.department,
-              });
-            }
-          }
+          const dates = Object.keys(window.workingSchedule);
+          let totalSaved = 0;
 
-          console.log("Assignments to save:", assignments);
+          for (const date of dates) {
+            const crewList = window.workingSchedule[date] || [];
 
-          if (assignments.length === 0) {
-            showNotification("No assignments to save", "info");
-            return;
-          }
+            if (crewList.length === 0) continue;
 
-          let successCount = 0;
-
-          // First, clear all existing assignments for this project (optional - depends on your needs)
-          // You can skip this if you want to keep existing assignments not in the current selection
-
-          for (const assignment of assignments) {
-            try {
-              const response = await fetch(`${API_BASE_URL}/schedule/assign`, {
+            const response = await fetch(
+              `${API_BASE_URL}/schedule/bulk-update`,
+              {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(assignment),
-              });
+                body: JSON.stringify({
+                  project_id: currentProject.id,
+                  date: date,
+                  assignments: crewList,
+                }),
+              },
+            );
 
-              if (response.ok) {
-                successCount++;
-                console.log(
-                  `✅ Saved: ${assignment.shoot_date} - ${assignment.crew_id}`,
-                );
-              } else {
-                console.error(`❌ Failed to save:`, assignment);
-              }
-            } catch (err) {
-              console.error("Error saving assignment:", err);
+            if (response.ok) {
+              totalSaved += crewList.length;
+              console.log(
+                `✅ Updated ${date} with ${crewList.length} crew members`,
+              );
             }
-
-            // Small delay to avoid overwhelming the server
-            await new Promise((r) => setTimeout(r, 50));
           }
 
           showNotification(
-            `✅ Successfully saved ${successCount} crew assignments!`,
+            `✅ Successfully saved ${totalSaved} crew assignments!`,
             "success",
           );
 
-          // IMPORTANT: Reload schedule to get fresh data from server
+          // Reload schedule
           await loadSchedule(currentProject.id);
-
-          // Update workingSchedule with the newly loaded data
           window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
-
-          // Refresh the view to show updated data
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
           console.error("Error saving schedule:", error);
