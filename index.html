@@ -1039,6 +1039,7 @@
           const scheduleObj = {};
           if (data.schedule && Array.isArray(data.schedule)) {
             data.schedule.forEach((day) => {
+              // Store crew assignments for this date
               scheduleObj[day.date] = day.crew.map((c) => ({
                 crew_id: c.id,
                 department: c.department,
@@ -1048,7 +1049,7 @@
           }
 
           schedule = scheduleObj;
-          console.log("Transformed schedule:", scheduleObj);
+          console.log("Schedule loaded:", scheduleObj);
           return scheduleObj;
         } catch (error) {
           console.error("Error loading schedule:", error);
@@ -2009,12 +2010,14 @@
               department: member.department,
               call_time: "06:00", // Default call time
             });
+            console.log(`✅ Added ${member.full_name} to ${date}`);
           }
         } else {
           // Remove member from schedule
           window.workingSchedule[date] = window.workingSchedule[date].filter(
             (a) => a.crew_id !== memberId,
           );
+          console.log(`❌ Removed ${member.full_name} from ${date}`);
         }
 
         // Update selected count for department
@@ -2035,25 +2038,11 @@
         // Update day count
         updateDayCount(date);
 
-        // Log for debugging
+        // Log current working schedule for debugging
         console.log(
-          `Updated ${date}: ${window.workingSchedule[date].length} members`,
+          `Current workingSchedule for ${date}:`,
+          window.workingSchedule[date],
         );
-
-        // Add this function to debug
-        window.debugSchedule = () => {
-          console.log("Current workingSchedule:", window.workingSchedule);
-          console.log("Original schedule from DB:", schedule);
-
-          let totalAssignments = 0;
-          for (const [date, crewList] of Object.entries(
-            window.workingSchedule,
-          )) {
-            totalAssignments += crewList.length;
-            console.log(`${date}: ${crewList.length} members`);
-          }
-          console.log(`Total assignments to save: ${totalAssignments}`);
-        };
       };
 
       // Update the crew count for a specific day
@@ -2068,17 +2057,17 @@
       }
 
       // Reset all changes to original schedule
+      // Reset all changes to original schedule
       window.resetSchedule = async () => {
         if (confirm("Reset all unsaved changes?")) {
           await loadSchedule(currentProject.id);
           window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
           renderScheduleView(document.getElementById("main-content"));
+          showNotification("Schedule reset to last saved state", "info");
         }
       };
 
       // Save all changes to database
-      // Save all changes to database - DEBUG VERSION
-      // Save all changes to database - Simplified
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
@@ -2099,12 +2088,17 @@
             }
           }
 
+          console.log("Assignments to save:", assignments);
+
           if (assignments.length === 0) {
             showNotification("No assignments to save", "info");
             return;
           }
 
           let successCount = 0;
+
+          // First, clear all existing assignments for this project (optional - depends on your needs)
+          // You can skip this if you want to keep existing assignments not in the current selection
 
           for (const assignment of assignments) {
             try {
@@ -2116,13 +2110,18 @@
 
               if (response.ok) {
                 successCount++;
+                console.log(
+                  `✅ Saved: ${assignment.shoot_date} - ${assignment.crew_id}`,
+                );
+              } else {
+                console.error(`❌ Failed to save:`, assignment);
               }
             } catch (err) {
               console.error("Error saving assignment:", err);
             }
 
             // Small delay to avoid overwhelming the server
-            await new Promise((r) => setTimeout(r, 100));
+            await new Promise((r) => setTimeout(r, 50));
           }
 
           showNotification(
@@ -2130,11 +2129,13 @@
             "success",
           );
 
-          // Reload schedule to get fresh data
+          // IMPORTANT: Reload schedule to get fresh data from server
           await loadSchedule(currentProject.id);
+
+          // Update workingSchedule with the newly loaded data
           window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
 
-          // Refresh the view
+          // Refresh the view to show updated data
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
           console.error("Error saving schedule:", error);
