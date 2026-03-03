@@ -2068,43 +2068,65 @@
       };
 
       // Save all changes to database - using bulk update
+      // Save all changes to database - using bulk update with better error handling
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
 
           const dates = Object.keys(window.workingSchedule);
           let totalSaved = 0;
+          let totalFailed = 0;
 
           for (const date of dates) {
             const crewList = window.workingSchedule[date] || [];
 
             if (crewList.length === 0) continue;
 
-            const response = await fetch(
-              `${API_BASE_URL}/schedule/bulk-update`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  project_id: currentProject.id,
-                  date: date,
-                  assignments: crewList,
-                }),
-              },
-            );
+            console.log(`Saving for ${date}:`, crewList);
 
-            if (response.ok) {
-              totalSaved += crewList.length;
-              console.log(
-                `✅ Updated ${date} with ${crewList.length} crew members`,
+            try {
+              const response = await fetch(
+                `${API_BASE_URL}/schedule/bulk-update`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    project_id: currentProject.id,
+                    date: date,
+                    assignments: crewList,
+                  }),
+                },
               );
+
+              const responseData = await response.json();
+
+              if (response.ok) {
+                totalSaved += crewList.length;
+                console.log(
+                  `✅ Updated ${date} with ${crewList.length} crew members`,
+                  responseData,
+                );
+              } else {
+                totalFailed += crewList.length;
+                console.error(`❌ Failed to update ${date}:`, responseData);
+              }
+            } catch (err) {
+              totalFailed += crewList.length;
+              console.error(`❌ Error updating ${date}:`, err);
             }
           }
 
-          showNotification(
-            `✅ Successfully saved ${totalSaved} crew assignments!`,
-            "success",
-          );
+          if (totalFailed === 0) {
+            showNotification(
+              `✅ Successfully saved ${totalSaved} crew assignments!`,
+              "success",
+            );
+          } else {
+            showNotification(
+              `⚠️ Saved ${totalSaved} assignments, ${totalFailed} failed`,
+              "warning",
+            );
+          }
 
           // Reload schedule
           await loadSchedule(currentProject.id);
@@ -2112,7 +2134,10 @@
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
           console.error("Error saving schedule:", error);
-          showNotification("❌ Failed to save schedule", "error");
+          showNotification(
+            "❌ Failed to save schedule: " + error.message,
+            "error",
+          );
         }
       };
 
