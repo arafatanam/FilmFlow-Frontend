@@ -1989,10 +1989,14 @@
       };
 
       // Toggle individual member
+      // Toggle individual member
       window.toggleMember = (date, memberId, checked) => {
+        // Format date consistently (remove time part if present)
+        const formattedDate = date.split("T")[0]; // This will convert "2026-02-21T00:00:00.000Z" to "2026-02-21"
+
         // Initialize working schedule for this date if needed
-        if (!window.workingSchedule[date]) {
-          window.workingSchedule[date] = [];
+        if (!window.workingSchedule[formattedDate]) {
+          window.workingSchedule[formattedDate] = [];
         }
 
         // Find the member to get their department
@@ -2001,47 +2005,46 @@
 
         if (checked) {
           // Check if member already exists in schedule
-          const exists = window.workingSchedule[date].some(
+          const exists = window.workingSchedule[formattedDate].some(
             (a) => a.crew_id === memberId,
           );
           if (!exists) {
-            window.workingSchedule[date].push({
+            window.workingSchedule[formattedDate].push({
               crew_id: memberId,
               department: member.department,
-              call_time: "06:00", // Default call time
+              call_time: "06:00",
             });
-            console.log(`✅ Added ${member.full_name} to ${date}`);
+            console.log(`✅ Added ${member.full_name} to ${formattedDate}`);
           }
         } else {
           // Remove member from schedule
-          window.workingSchedule[date] = window.workingSchedule[date].filter(
-            (a) => a.crew_id !== memberId,
-          );
-          console.log(`❌ Removed ${member.full_name} from ${date}`);
+          window.workingSchedule[formattedDate] = window.workingSchedule[
+            formattedDate
+          ].filter((a) => a.crew_id !== memberId);
+          console.log(`❌ Removed ${member.full_name} from ${formattedDate}`);
         }
 
         // Update selected count for department
         const selectedCount =
-          window.workingSchedule[date]?.filter(
+          window.workingSchedule[formattedDate]?.filter(
             (a) =>
               crew.find((c) => c.id === a.crew_id)?.department ===
               member.department,
           ).length || 0;
 
         const countSpan = document.getElementById(
-          `selected-${date}-${member.department}`,
+          `selected-${formattedDate}-${member.department}`,
         );
         if (countSpan) {
           countSpan.textContent = `${selectedCount} selected`;
         }
 
         // Update day count
-        updateDayCount(date);
+        updateDayCount(formattedDate);
 
-        // Log current working schedule for debugging
         console.log(
-          `Current workingSchedule for ${date}:`,
-          window.workingSchedule[date],
+          `Current workingSchedule for ${formattedDate}:`,
+          window.workingSchedule[formattedDate],
         );
       };
 
