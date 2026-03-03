@@ -2264,6 +2264,7 @@
       };
 
       // Save all changes to the server
+      // Save all changes to the server
       window.saveScheduleChanges = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
@@ -2271,10 +2272,11 @@
           const dates = Object.keys(window.workingSchedule);
           let totalSaved = 0;
 
-          for (const date of dates) {
-            const crewList = window.workingSchedule[date] || [];
+          for (const rawDate of dates) {
+            // Format date consistently (remove time part if present)
+            const date = rawDate.split("T")[0];
+            const crewList = window.workingSchedule[rawDate] || [];
 
-            // Skip dates with no assignments (they'll be cleared)
             const response = await fetch(
               `${API_BASE_URL}/schedule/bulk-update`,
               {
@@ -2282,7 +2284,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   project_id: currentProject.id,
-                  date: date,
+                  date: date, // Use formatted date
                   assignments: crewList,
                 }),
               },
@@ -2874,7 +2876,7 @@
         await Promise.all([
           loadProjectCrew(projectId),
           loadSchedule(projectId),
-          loadConflicts(projectId),
+          // Removed loadConflicts
         ]);
 
         document
