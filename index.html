@@ -815,6 +815,194 @@
         background: rgba(255, 69, 58, 0.1);
       }
 
+      /* Schedule Date Cards */
+      .date-card {
+        background: var(--dark);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+      }
+
+      .date-header {
+        padding: 1rem 1.5rem;
+        background: var(--medium);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-left: 4px solid var(--primary);
+      }
+
+      .date-header:hover {
+        background: rgba(255, 45, 85, 0.1);
+      }
+
+      .date-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--secondary);
+        margin-right: 1rem;
+      }
+
+      .date-count {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        background: rgba(255, 255, 255, 0.05);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+      }
+
+      .date-arrow {
+        transition: transform 0.3s ease;
+        color: var(--text-muted);
+      }
+
+      .date-content {
+        padding: 1.5rem;
+        background: var(--dark);
+      }
+
+      /* Department Sections */
+      .dept-section {
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .dept-header {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+
+      .dept-name {
+        font-weight: 700;
+        color: var(--secondary);
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+      }
+
+      .dept-count {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+      }
+
+      .dept-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .dept-selected-count {
+        font-size: 0.9rem;
+        color: var(--success);
+        font-weight: 600;
+        min-width: 100px;
+        text-align: right;
+      }
+
+      .btn-dept-select,
+      .btn-dept-deselect {
+        background: transparent;
+        border: 1px solid;
+        padding: 0.3rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-dept-select {
+        border-color: var(--success);
+        color: var(--success);
+      }
+
+      .btn-dept-select:hover {
+        background: rgba(48, 209, 88, 0.1);
+      }
+
+      .btn-dept-deselect {
+        border-color: var(--danger);
+        color: var(--danger);
+      }
+
+      .btn-dept-deselect:hover {
+        background: rgba(255, 69, 58, 0.1);
+      }
+
+      .dept-members {
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 0.75rem;
+      }
+
+      .member-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+
+      .member-item:hover {
+        background: rgba(255, 45, 85, 0.1);
+        border-color: var(--primary);
+      }
+
+      .member-item.selected {
+        background: rgba(48, 209, 88, 0.1);
+        border-color: var(--success);
+      }
+
+      .member-item input[type="checkbox"] {
+        margin-right: 0.75rem;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary);
+      }
+
+      .member-name {
+        flex: 1;
+        font-size: 0.95rem;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+      }
+
+      .loading i {
+        font-size: 2rem;
+        color: var(--primary);
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
       @media (max-width: 768px) {
         .container {
           padding: 1rem;
@@ -1039,7 +1227,6 @@
           const scheduleObj = {};
           if (data.schedule && Array.isArray(data.schedule)) {
             data.schedule.forEach((day) => {
-              // Store crew assignments for this date
               scheduleObj[day.date] = day.crew.map((c) => ({
                 crew_id: c.id,
                 department: c.department,
@@ -1781,34 +1968,37 @@
         `;
       }
 
+      // Main schedule view renderer
       async function renderScheduleView(container) {
         if (!currentProject) {
           container.innerHTML = `
       <div class="card">
-          <div class="card-title">Select a Project</div>
-          <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to manage schedule.</p>
-          <div class="project-list">
-              ${projects
-                .map(
-                  (project) => `
-                  <div class="project-item" onclick="selectProject(${project.id})">
-                      <h3>${project.name} ${project.status === "completed" ? '<span style="color: var(--success); font-size: 0.8rem;">✓</span>' : ""}</h3>
-                      <div class="project-meta">${project.project_code}</div>
-                  </div>
-                `,
-                )
-                .join("")}
-          </div>
+        <div class="card-title">Select a Project</div>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Please select a project to manage schedule.</p>
+        <div class="project-list">
+          ${projects
+            .map(
+              (project) => `
+            <div class="project-item" onclick="selectProject(${project.id})">
+              <h3>${project.name}</h3>
+              <div class="project-meta">${project.project_code}</div>
+            </div>
+          `,
+            )
+            .join("")}
+        </div>
       </div>
     `;
           return;
         }
 
-        // Load crew and current schedule
+        // Show loading state
+        container.innerHTML = `<div class="card"><div class="loading">Loading schedule...</div></div>`;
+
+        // Load all necessary data
         await Promise.all([
           loadProjectCrew(currentProject.id),
           loadSchedule(currentProject.id),
-          // Removed loadConflicts
         ]);
 
         // Get all dates for this project
@@ -1826,32 +2016,325 @@
           crewByDept[member.department].push(member);
         });
 
-        // Create a working copy of schedule for editing
-        let workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
+        // Create working schedule (what we'll modify before saving)
+        // This should be a deep copy of the saved schedule
+        window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
 
         container.innerHTML = `
     <div class="card">
       <div class="card-title">
-          <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
+        <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
       </div>
       
-      <div class="schedule-days" id="schedule-days">
-        ${dates.map((date) => renderDayCard(date, crewByDept, workingSchedule)).join("")}
+      <div class="schedule-dates">
+        ${dates.map((date) => renderDateCard(date, crewByDept)).join("")}
       </div>
 
       <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
-        <button class="btn btn-secondary" onclick="resetSchedule()">
+        <button class="btn btn-secondary" onclick="resetScheduleChanges()">
           <i class="fas fa-undo"></i> Reset Changes
         </button>
-        <button class="btn btn-success" onclick="saveSchedule()">
+        <button class="btn btn-success" onclick="saveScheduleChanges()">
           <i class="fas fa-save"></i> Save All Changes
         </button>
       </div>
     </div>
   `;
+      }
 
-        // Add event listeners after rendering
-        attachScheduleListeners(crewByDept, workingSchedule);
+      // Helper to get all dates between start and end
+      function getDatesBetween(start, end) {
+        const dates = [];
+        const current = new Date(start);
+        const last = new Date(end);
+
+        while (current <= last) {
+          dates.push(current.toISOString().split("T")[0]);
+          current.setDate(current.getDate() + 1);
+        }
+        return dates;
+      }
+
+      // Render a single date card
+      function renderDateCard(date, crewByDept) {
+        const assignedCrew = window.workingSchedule[date] || [];
+        const assignedCount = assignedCrew.length;
+
+        return `
+    <div class="date-card" data-date="${date}">
+      <div class="date-header" onclick="toggleDateCard('${date}')">
+        <div>
+          <span class="date-title">${formatDate(date)}</span>
+          <span class="date-count">${assignedCount} crew assigned</span>
+        </div>
+        <i class="fas fa-chevron-down date-arrow"></i>
+      </div>
+      
+      <div class="date-content" id="date-${date}" style="display: none;">
+        ${Object.entries(crewByDept)
+          .map(
+            ([dept, members]) => `
+          <div class="dept-section">
+            <div class="dept-header">
+              <div>
+                <span class="dept-name">${dept}</span>
+                <span class="dept-count">${members.length} members</span>
+              </div>
+              <div class="dept-actions">
+                <span class="dept-selected-count" id="selected-${date}-${dept}">
+                  ${getSelectedCount(date, dept)} selected
+                </span>
+                <button class="btn-dept-select" onclick="selectAllInDepartment('${date}', '${dept}')">
+                  Select All
+                </button>
+                <button class="btn-dept-deselect" onclick="deselectAllInDepartment('${date}', '${dept}')">
+                  Clear
+                </button>
+              </div>
+            </div>
+            
+            <div class="dept-members">
+              ${members
+                .map(
+                  (member) => `
+                <label class="member-item ${isMemberSelected(date, member.id) ? "selected" : ""}">
+                  <input type="checkbox" 
+                         value="${member.id}" 
+                         data-date="${date}" 
+                         data-dept="${dept}"
+                         ${isMemberSelected(date, member.id) ? "checked" : ""}
+                         onchange="toggleMember('${date}', ${member.id}, this.checked)">
+                  <span class="member-name">${member.full_name}</span>
+                  ${getMemberBadges(member)}
+                </label>
+              `,
+                )
+                .join("")}
+            </div>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+      }
+
+      // Helper to check if a member is selected for a date
+      function isMemberSelected(date, memberId) {
+        return (
+          window.workingSchedule[date]?.some((a) => a.crew_id === memberId) ||
+          false
+        );
+      }
+
+      // Helper to get selected count for a department on a date
+      function getSelectedCount(date, dept) {
+        const assignments = window.workingSchedule[date] || [];
+        return assignments.filter((a) => a.department === dept).length;
+      }
+
+      // Toggle date card expansion
+      window.toggleDateCard = (date) => {
+        const content = document.getElementById(`date-${date}`);
+        const arrow = event.currentTarget.querySelector(".date-arrow");
+
+        if (content.style.display === "none") {
+          content.style.display = "block";
+          arrow.style.transform = "rotate(180deg)";
+        } else {
+          content.style.display = "none";
+          arrow.style.transform = "rotate(0deg)";
+        }
+      };
+
+      // Select all members in a department for a specific date
+      window.selectAllInDepartment = (date, dept) => {
+        if (!window.workingSchedule[date]) {
+          window.workingSchedule[date] = [];
+        }
+
+        // Get all members of this department
+        const members = crew.filter((m) => m.department === dept);
+
+        // Add each member if not already selected
+        members.forEach((member) => {
+          const exists = window.workingSchedule[date].some(
+            (a) => a.crew_id === member.id,
+          );
+          if (!exists) {
+            window.workingSchedule[date].push({
+              crew_id: member.id,
+              department: member.department,
+              call_time: "06:00",
+            });
+          }
+        });
+
+        // Update UI
+        updateDateUI(date, dept);
+      };
+
+      // Deselect all members in a department for a specific date
+      window.deselectAllInDepartment = (date, dept) => {
+        if (!window.workingSchedule[date]) return;
+
+        // Remove all members of this department
+        window.workingSchedule[date] = window.workingSchedule[date].filter(
+          (a) => a.department !== dept,
+        );
+
+        // Update UI
+        updateDateUI(date, dept);
+      };
+
+      // Toggle individual member selection
+      window.toggleMember = (date, memberId, checked) => {
+        if (!window.workingSchedule[date]) {
+          window.workingSchedule[date] = [];
+        }
+
+        const member = crew.find((c) => c.id === memberId);
+        if (!member) return;
+
+        if (checked) {
+          // Add member
+          const exists = window.workingSchedule[date].some(
+            (a) => a.crew_id === memberId,
+          );
+          if (!exists) {
+            window.workingSchedule[date].push({
+              crew_id: memberId,
+              department: member.department,
+              call_time: "06:00",
+            });
+          }
+        } else {
+          // Remove member
+          window.workingSchedule[date] = window.workingSchedule[date].filter(
+            (a) => a.crew_id !== memberId,
+          );
+        }
+
+        // Update UI
+        updateDateUI(date, member.department);
+      };
+
+      // Update UI after changes
+      function updateDateUI(date, dept) {
+        // Update selected count for this department
+        const selectedCount = getSelectedCount(date, dept);
+        const countSpan = document.getElementById(`selected-${date}-${dept}`);
+        if (countSpan) {
+          countSpan.textContent = `${selectedCount} selected`;
+        }
+
+        // Update total count for the date
+        const totalCount = window.workingSchedule[date]?.length || 0;
+        const dateHeader = document.querySelector(
+          `.date-card[data-date="${date}"] .date-count`,
+        );
+        if (dateHeader) {
+          dateHeader.textContent = `${totalCount} crew assigned`;
+        }
+
+        // Update checkbox states
+        document
+          .querySelectorAll(`.member-item input[data-date="${date}"]`)
+          .forEach((checkbox) => {
+            const memberId = parseInt(checkbox.value);
+            const member = crew.find((c) => c.id === memberId);
+            if (member && member.department === dept) {
+              checkbox.checked = isMemberSelected(date, memberId);
+              checkbox
+                .closest(".member-item")
+                .classList.toggle("selected", checkbox.checked);
+            }
+          });
+      }
+
+      // Reset all unsaved changes
+      window.resetScheduleChanges = async () => {
+        if (confirm("Reset all unsaved changes?")) {
+          await loadSchedule(currentProject.id);
+          window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
+          renderScheduleView(document.getElementById("main-content"));
+          showNotification("Schedule reset to last saved state", "info");
+        }
+      };
+
+      // Save all changes to the server
+      window.saveScheduleChanges = async () => {
+        try {
+          showNotification("Saving schedule changes...", "info");
+
+          const dates = Object.keys(window.workingSchedule);
+          let totalSaved = 0;
+
+          for (const date of dates) {
+            const crewList = window.workingSchedule[date] || [];
+
+            // Skip dates with no assignments (they'll be cleared)
+            const response = await fetch(
+              `${API_BASE_URL}/schedule/bulk-update`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  project_id: currentProject.id,
+                  date: date,
+                  assignments: crewList,
+                }),
+              },
+            );
+
+            if (response.ok) {
+              totalSaved += crewList.length;
+              console.log(
+                `✅ Saved ${crewList.length} assignments for ${date}`,
+              );
+            } else {
+              const error = await response.text();
+              console.error(`❌ Failed to save for ${date}:`, error);
+            }
+          }
+
+          showNotification(
+            `✅ Successfully saved ${totalSaved} crew assignments!`,
+            "success",
+          );
+
+          // Reload schedule from server
+          await loadSchedule(currentProject.id);
+          window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
+
+          // Refresh the view
+          renderScheduleView(document.getElementById("main-content"));
+        } catch (error) {
+          console.error("Error saving schedule:", error);
+          showNotification("❌ Failed to save schedule", "error");
+        }
+      };
+
+      // Get badges for member (dietary, insurance, etc.)
+      function getMemberBadges(member) {
+        const badges = [];
+        if (member.dietary_restrictions?.length > 0) {
+          badges.push(
+            `<span class="badge badge-success" title="Dietary">🍽️</span>`,
+          );
+        }
+        if (!member.has_insurance) {
+          badges.push(
+            `<span class="badge badge-warning" title="No Insurance">⚠️</span>`,
+          );
+        }
+        if (!member.emergency_name) {
+          badges.push(
+            `<span class="badge badge-danger" title="No Emergency">🚨</span>`,
+          );
+        }
+        return badges.join(" ");
       }
 
       // Helper function to get all dates between start and end
