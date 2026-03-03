@@ -1056,20 +1056,6 @@
         }
       }
 
-      async function loadConflicts(projectId) {
-        try {
-          const response = await fetch(
-            `${API_BASE_URL}/schedule/project/${projectId}/conflicts`,
-          );
-          const data = await response.json();
-          conflicts = data.conflicts || [];
-          return data;
-        } catch (error) {
-          console.error("Error loading conflicts:", error);
-          return { conflicts: [] };
-        }
-      }
-
       async function createProject(projectData) {
         try {
           const response = await fetch(`${API_BASE_URL}/projects`, {
@@ -1821,7 +1807,7 @@
         await Promise.all([
           loadProjectCrew(currentProject.id),
           loadSchedule(currentProject.id),
-          loadConflicts(currentProject.id),
+          // Removed loadConflicts
         ]);
 
         // Get all dates for this project
@@ -1848,21 +1834,6 @@
           <i class="fas fa-calendar-alt"></i> Schedule: ${currentProject.name}
       </div>
       
-      ${
-        conflicts.length > 0
-          ? `
-        <div style="background: rgba(255,69,58,0.1); border-radius: 12px; padding: 1rem; margin-bottom: 2rem;">
-            <h3 style="color: var(--danger); margin-bottom: 0.5rem;">
-                <i class="fas fa-exclamation-triangle"></i> ${conflicts.length} Conflicts Detected
-            </h3>
-            <button class="btn btn-sm btn-warning" onclick="showConflictReport()">
-                View Report & Solutions
-            </button>
-        </div>
-      `
-          : ""
-      }
-
       <div class="schedule-days" id="schedule-days">
         ${dates.map((date) => renderDayCard(date, crewByDept, workingSchedule)).join("")}
       </div>
@@ -2107,6 +2078,7 @@
 
       // Save all changes to database
       // Save all changes to database - DEBUG VERSION
+      // Save all changes to database - Simplified
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
@@ -2127,61 +2099,36 @@
             }
           }
 
-          console.log(
-            "📤 Assignments to save:",
-            JSON.stringify(assignments, null, 2),
-          );
-
           if (assignments.length === 0) {
             showNotification("No assignments to save", "info");
             return;
           }
 
           let successCount = 0;
-          let failCount = 0;
 
           for (const assignment of assignments) {
             try {
-              console.log("Sending assignment:", assignment);
-
               const response = await fetch(`${API_BASE_URL}/schedule/assign`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(assignment),
               });
 
-              const responseText = await response.text();
-              console.log(`Response status: ${response.status}`);
-              console.log(`Response body:`, responseText);
-
               if (response.ok) {
                 successCount++;
-                console.log(`✅ Saved:`, assignment);
-              } else {
-                console.error(`❌ Failed (${response.status}):`, assignment);
-                console.error(`Error details:`, responseText);
-                failCount++;
               }
             } catch (err) {
-              console.error("❌ Network error:", err);
-              failCount++;
+              console.error("Error saving assignment:", err);
             }
 
             // Small delay to avoid overwhelming the server
             await new Promise((r) => setTimeout(r, 100));
           }
 
-          if (failCount === 0) {
-            showNotification(
-              `✅ Successfully saved ${successCount} crew assignments!`,
-              "success",
-            );
-          } else {
-            showNotification(
-              `⚠️ Saved ${successCount} assignments, ${failCount} failed`,
-              "warning",
-            );
-          }
+          showNotification(
+            `✅ Successfully saved ${successCount} crew assignments!`,
+            "success",
+          );
 
           // Reload schedule to get fresh data
           await loadSchedule(currentProject.id);
@@ -2190,11 +2137,8 @@
           // Refresh the view
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
-          console.error("❌ Error saving schedule:", error);
-          showNotification(
-            "❌ Failed to save schedule: " + error.message,
-            "error",
-          );
+          console.error("Error saving schedule:", error);
+          showNotification("❌ Failed to save schedule", "error");
         }
       };
 
@@ -2359,58 +2303,6 @@
         });
 
         calendar.render();
-      }
-
-      function showConflictReport() {
-        const modal = document.createElement("div");
-        modal.className = "modal";
-        modal.innerHTML = `
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h2 style="color: var(--danger);">⚠️ Conflict Report</h2>
-                  <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-              </div>
-              <div style="max-height: 60vh; overflow-y: auto;">
-                  ${conflicts
-                    .map(
-                      (conflict) => `
-                      <div class="conflict-item">
-                          <strong>${conflict.crew_name}</strong> - ${formatDate(conflict.shoot_date)}
-                          <div style="margin-top: 0.5rem; font-size: 0.9rem;">
-                              ${conflict.is_double_booked ? "• Double booked on another project<br>" : ""}
-                              ${conflict.is_personal_unavailable ? "• Marked as unavailable<br>" : ""}
-                              ${conflict.missing_emergency ? "• Missing emergency contact<br>" : ""}
-                              ${conflict.missing_dietary ? "• Missing dietary info<br>" : ""}
-                              ${conflict.insurance_issue ? "• Insurance issue<br>" : ""}
-                          </div>
-                          <div class="conflict-suggestion">
-                              <i class="fas fa-lightbulb"></i> 
-                              ${getConflictSuggestion(conflict)}
-                          </div>
-                      </div>
-                    `,
-                    )
-                    .join("")}
-              </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
-      }
-
-      function getConflictSuggestion(conflict) {
-        if (conflict.is_double_booked) {
-          return "Check available alternates in same department";
-        }
-        if (conflict.missing_emergency) {
-          return "Send reminder to update emergency contact";
-        }
-        if (conflict.missing_dietary) {
-          return "Send reminder to add dietary restrictions";
-        }
-        if (conflict.insurance_issue) {
-          return "Verify insurance before shoot day";
-        }
-        return "Contact crew member to resolve";
       }
 
       function showFlagsModal(flags) {
