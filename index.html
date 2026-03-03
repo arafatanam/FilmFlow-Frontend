@@ -2003,19 +2003,23 @@
       };
 
       // Toggle individual member
+      // Toggle individual member
       window.toggleMember = (date, memberId, checked) => {
-        // Update working schedule
+        // Initialize working schedule for this date if needed
         if (!window.workingSchedule[date]) {
           window.workingSchedule[date] = [];
         }
 
+        // Find the member to get their department
+        const member = crew.find((c) => c.id === memberId);
+        if (!member) return;
+
         if (checked) {
-          // Add member to schedule
-          const member = crew.find((c) => c.id === memberId);
-          if (
-            member &&
-            !window.workingSchedule[date].some((a) => a.crew_id === memberId)
-          ) {
+          // Check if member already exists in schedule
+          const exists = window.workingSchedule[date].some(
+            (a) => a.crew_id === memberId,
+          );
+          if (!exists) {
             window.workingSchedule[date].push({
               crew_id: memberId,
               department: member.department,
@@ -2030,19 +2034,27 @@
         }
 
         // Update selected count for department
-        const dept = crew.find((c) => c.id === memberId)?.department;
         const selectedCount =
           window.workingSchedule[date]?.filter(
-            (a) => crew.find((c) => c.id === a.crew_id)?.department === dept,
+            (a) =>
+              crew.find((c) => c.id === a.crew_id)?.department ===
+              member.department,
           ).length || 0;
 
-        const countSpan = document.getElementById(`selected-${date}-${dept}`);
+        const countSpan = document.getElementById(
+          `selected-${date}-${member.department}`,
+        );
         if (countSpan) {
           countSpan.textContent = `${selectedCount} selected`;
         }
 
         // Update day count
         updateDayCount(date);
+
+        // Log for debugging
+        console.log(
+          `Updated ${date}: ${window.workingSchedule[date].length} members`,
+        );
       };
 
       // Update the crew count for a specific day
@@ -2066,6 +2078,7 @@
       };
 
       // Save all changes to database
+      // Save all changes to database
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
@@ -2076,6 +2089,7 @@
             window.workingSchedule,
           )) {
             for (const assignment of crewList) {
+              // Make sure we have all required fields
               assignments.push({
                 project_id: currentProject.id,
                 crew_id: assignment.crew_id,
@@ -2086,34 +2100,70 @@
             }
           }
 
-          // For now, we'll clear and reassign (in production, you'd want a more efficient method)
-          // Clear existing schedule for this project
-          await fetch(`${API_BASE_URL}/schedule/project/${currentProject.id}`, {
-            method: "DELETE",
-          });
+          console.log("Assignments to save:", assignments);
 
-          // Add all new assignments
-          let successCount = 0;
-          for (const assignment of assignments) {
-            const response = await fetch(`${API_BASE_URL}/schedule/assign`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(assignment),
-            });
-            if (response.ok) successCount++;
+          if (assignments.length === 0) {
+            showNotification("No assignments to save", "info");
+            return;
           }
 
-          showNotification(
-            `Saved ${successCount} crew assignments!`,
-            "success",
-          );
+          // Instead of clearing all at once, we'll update each assignment individually
+          // This is more reliable than trying to clear first
+          let successCount = 0;
+          let failCount = 0;
 
-          // Reload schedule
+          for (const assignment of assignments) {
+            try {
+              const response = await fetch(`${API_BASE_URL}/schedule/assign`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(assignment),
+              });
+
+              if (response.ok) {
+                successCount++;
+              } else {
+                const errorData = await response.json();
+                console.error(
+                  "Failed to save assignment:",
+                  assignment,
+                  errorData,
+                );
+                failCount++;
+              }
+            } catch (err) {
+              console.error("Error saving assignment:", assignment, err);
+              failCount++;
+            }
+
+            // Small delay to avoid overwhelming the server
+            await new Promise((r) => setTimeout(r, 100));
+          }
+
+          if (failCount === 0) {
+            showNotification(
+              `✅ Successfully saved ${successCount} crew assignments!`,
+              "success",
+            );
+          } else {
+            showNotification(
+              `⚠️ Saved ${successCount} assignments, ${failCount} failed`,
+              "warning",
+            );
+          }
+
+          // Reload schedule to get fresh data
           await loadSchedule(currentProject.id);
           window.workingSchedule = JSON.parse(JSON.stringify(schedule));
+
+          // Refresh the view to show updated data
+          renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
           console.error("Error saving schedule:", error);
-          showNotification("Failed to save schedule", "error");
+          showNotification(
+            "❌ Failed to save schedule: " + error.message,
+            "error",
+          );
         }
       };
 
