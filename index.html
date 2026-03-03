@@ -2106,6 +2106,7 @@
       };
 
       // Save all changes to database
+      // Save all changes to database - DEBUG VERSION
       window.saveSchedule = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
@@ -2116,7 +2117,6 @@
             window.workingSchedule,
           )) {
             for (const assignment of crewList) {
-              // Make sure we have all required fields
               assignments.push({
                 project_id: currentProject.id,
                 crew_id: assignment.crew_id,
@@ -2127,39 +2127,43 @@
             }
           }
 
-          console.log("Assignments to save:", assignments);
+          console.log(
+            "📤 Assignments to save:",
+            JSON.stringify(assignments, null, 2),
+          );
 
           if (assignments.length === 0) {
             showNotification("No assignments to save", "info");
             return;
           }
 
-          // Instead of clearing all at once, we'll update each assignment individually
-          // This is more reliable than trying to clear first
           let successCount = 0;
           let failCount = 0;
 
           for (const assignment of assignments) {
             try {
+              console.log("Sending assignment:", assignment);
+
               const response = await fetch(`${API_BASE_URL}/schedule/assign`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(assignment),
               });
 
+              const responseText = await response.text();
+              console.log(`Response status: ${response.status}`);
+              console.log(`Response body:`, responseText);
+
               if (response.ok) {
                 successCount++;
+                console.log(`✅ Saved:`, assignment);
               } else {
-                const errorData = await response.json();
-                console.error(
-                  "Failed to save assignment:",
-                  assignment,
-                  errorData,
-                );
+                console.error(`❌ Failed (${response.status}):`, assignment);
+                console.error(`Error details:`, responseText);
                 failCount++;
               }
             } catch (err) {
-              console.error("Error saving assignment:", assignment, err);
+              console.error("❌ Network error:", err);
               failCount++;
             }
 
@@ -2181,12 +2185,12 @@
 
           // Reload schedule to get fresh data
           await loadSchedule(currentProject.id);
-          window.workingSchedule = JSON.parse(JSON.stringify(schedule));
+          window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
 
-          // Refresh the view to show updated data
+          // Refresh the view
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
-          console.error("Error saving schedule:", error);
+          console.error("❌ Error saving schedule:", error);
           showNotification(
             "❌ Failed to save schedule: " + error.message,
             "error",
