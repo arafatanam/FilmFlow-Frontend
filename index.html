@@ -1034,11 +1034,25 @@
             `${API_BASE_URL}/schedule/project/${projectId}`,
           );
           const data = await response.json();
-          schedule = data.schedule || [];
-          return data;
+
+          // Transform the array into an object with dates as keys
+          const scheduleObj = {};
+          if (data.schedule && Array.isArray(data.schedule)) {
+            data.schedule.forEach((day) => {
+              scheduleObj[day.date] = day.crew.map((c) => ({
+                crew_id: c.id,
+                department: c.department,
+                call_time: c.call_time || "06:00",
+              }));
+            });
+          }
+
+          schedule = scheduleObj;
+          console.log("Transformed schedule:", scheduleObj);
+          return scheduleObj;
         } catch (error) {
           console.error("Error loading schedule:", error);
-          return { schedule: [] };
+          return {};
         }
       }
 
@@ -1826,7 +1840,7 @@
         });
 
         // Create a working copy of schedule for editing
-        let workingSchedule = JSON.parse(JSON.stringify(schedule));
+        let workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
 
         container.innerHTML = `
     <div class="card">
@@ -2086,12 +2100,11 @@
       window.resetSchedule = async () => {
         if (confirm("Reset all unsaved changes?")) {
           await loadSchedule(currentProject.id);
-          window.workingSchedule = JSON.parse(JSON.stringify(schedule));
+          window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
           renderScheduleView(document.getElementById("main-content"));
         }
       };
 
-      // Save all changes to database
       // Save all changes to database
       window.saveSchedule = async () => {
         try {
