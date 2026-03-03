@@ -1227,7 +1227,9 @@
           const scheduleObj = {};
           if (data.schedule && Array.isArray(data.schedule)) {
             data.schedule.forEach((day) => {
-              scheduleObj[day.date] = day.crew.map((c) => ({
+              // Store using consistent date format (YYYY-MM-DD)
+              const dateKey = day.date.split("T")[0];
+              scheduleObj[dateKey] = day.crew.map((c) => ({
                 crew_id: c.id,
                 department: c.department,
                 call_time: c.call_time || "06:00",
@@ -2057,7 +2059,8 @@
 
       // Render a single date card
       function renderDateCard(date, crewByDept) {
-        const assignedCrew = window.workingSchedule[date] || [];
+        const dateKey = date.split("T")[0];
+        const assignedCrew = window.workingSchedule[dateKey] || [];
         const assignedCount = assignedCrew.length;
 
         return `
@@ -2190,8 +2193,11 @@
 
       // Toggle individual member selection
       window.toggleMember = (date, memberId, checked) => {
-        if (!window.workingSchedule[date]) {
-          window.workingSchedule[date] = [];
+        // Use consistent date format (YYYY-MM-DD)
+        const dateKey = date.split("T")[0];
+
+        if (!window.workingSchedule[dateKey]) {
+          window.workingSchedule[dateKey] = [];
         }
 
         const member = crew.find((c) => c.id === memberId);
@@ -2199,40 +2205,47 @@
 
         if (checked) {
           // Add member
-          const exists = window.workingSchedule[date].some(
+          const exists = window.workingSchedule[dateKey].some(
             (a) => a.crew_id === memberId,
           );
           if (!exists) {
-            window.workingSchedule[date].push({
+            window.workingSchedule[dateKey].push({
               crew_id: memberId,
               department: member.department,
               call_time: "06:00",
             });
+            console.log(`✅ Added ${member.full_name} to ${dateKey}`);
           }
         } else {
           // Remove member
-          window.workingSchedule[date] = window.workingSchedule[date].filter(
-            (a) => a.crew_id !== memberId,
-          );
+          window.workingSchedule[dateKey] = window.workingSchedule[
+            dateKey
+          ].filter((a) => a.crew_id !== memberId);
+          console.log(`❌ Removed ${member.full_name} from ${dateKey}`);
         }
 
         // Update UI
-        updateDateUI(date, member.department);
+        updateDateUI(dateKey, member.department);
       };
 
       // Update UI after changes
+      // Update UI after changes
       function updateDateUI(date, dept) {
+        const dateKey = date.split("T")[0];
+
         // Update selected count for this department
-        const selectedCount = getSelectedCount(date, dept);
-        const countSpan = document.getElementById(`selected-${date}-${dept}`);
+        const selectedCount = getSelectedCount(dateKey, dept);
+        const countSpan = document.getElementById(
+          `selected-${dateKey}-${dept}`,
+        );
         if (countSpan) {
           countSpan.textContent = `${selectedCount} selected`;
         }
 
         // Update total count for the date
-        const totalCount = window.workingSchedule[date]?.length || 0;
+        const totalCount = window.workingSchedule[dateKey]?.length || 0;
         const dateHeader = document.querySelector(
-          `.date-card[data-date="${date}"] .date-count`,
+          `.date-card[data-date="${dateKey}"] .date-count`,
         );
         if (dateHeader) {
           dateHeader.textContent = `${totalCount} crew assigned`;
@@ -2240,12 +2253,12 @@
 
         // Update checkbox states
         document
-          .querySelectorAll(`.member-item input[data-date="${date}"]`)
+          .querySelectorAll(`.member-item input[data-date="${dateKey}"]`)
           .forEach((checkbox) => {
             const memberId = parseInt(checkbox.value);
             const member = crew.find((c) => c.id === memberId);
             if (member && member.department === dept) {
-              checkbox.checked = isMemberSelected(date, memberId);
+              checkbox.checked = isMemberSelected(dateKey, memberId);
               checkbox
                 .closest(".member-item")
                 .classList.toggle("selected", checkbox.checked);
@@ -2264,18 +2277,25 @@
       };
 
       // Save all changes to the server
-      // Save all changes to the server
       window.saveScheduleChanges = async () => {
         try {
           showNotification("Saving schedule changes...", "info");
 
-          const dates = Object.keys(window.workingSchedule);
+          // Get ALL dates from the project (not just ones with assignments)
+          const allDates = getDatesBetween(
+            currentProject.start_date,
+            currentProject.end_date,
+          );
           let totalSaved = 0;
 
-          for (const rawDate of dates) {
-            // Format date consistently (remove time part if present)
+          for (const rawDate of allDates) {
+            // Format date consistently
             const date = rawDate.split("T")[0];
+
+            // Get assignments for this date (empty array if none)
             const crewList = window.workingSchedule[rawDate] || [];
+
+            console.log(`Saving for ${date}: ${crewList.length} assignments`);
 
             const response = await fetch(
               `${API_BASE_URL}/schedule/bulk-update`,
@@ -2284,7 +2304,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   project_id: currentProject.id,
-                  date: date, // Use formatted date
+                  date: date,
                   assignments: crewList,
                 }),
               },
@@ -2306,11 +2326,13 @@
             "success",
           );
 
-          // Reload schedule from server
+          // IMPORTANT: Reload schedule from server to get fresh data
           await loadSchedule(currentProject.id);
+
+          // Update workingSchedule with the newly loaded data
           window.workingSchedule = JSON.parse(JSON.stringify(schedule || {}));
 
-          // Refresh the view
+          // Refresh the view to show updated counts
           renderScheduleView(document.getElementById("main-content"));
         } catch (error) {
           console.error("Error saving schedule:", error);
