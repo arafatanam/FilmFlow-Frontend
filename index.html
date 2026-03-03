@@ -2003,7 +2003,6 @@
       };
 
       // Toggle individual member
-      // Toggle individual member
       window.toggleMember = (date, memberId, checked) => {
         // Initialize working schedule for this date if needed
         if (!window.workingSchedule[date]) {
@@ -2055,6 +2054,21 @@
         console.log(
           `Updated ${date}: ${window.workingSchedule[date].length} members`,
         );
+
+        // Add this function to debug
+        window.debugSchedule = () => {
+          console.log("Current workingSchedule:", window.workingSchedule);
+          console.log("Original schedule from DB:", schedule);
+
+          let totalAssignments = 0;
+          for (const [date, crewList] of Object.entries(
+            window.workingSchedule,
+          )) {
+            totalAssignments += crewList.length;
+            console.log(`${date}: ${crewList.length} members`);
+          }
+          console.log(`Total assignments to save: ${totalAssignments}`);
+        };
       };
 
       // Update the crew count for a specific day
